@@ -1,8 +1,10 @@
-import InputNodeDef from '../nodes/InputNode.json';
-import PromptNodeDef from '../nodes/PromptNode.json';
-import LLMNodeDef from '../nodes/LLMNode.json';
-import SummarizerNodeDef from '../nodes/SummarizerNode.json';
-import OutputNodeDef from '../nodes/OutputNode.json';
+// Import node definitions
+// Using require instead of import for JSON files to avoid TypeScript issues
+const InputNodeDef = require('../nodes/InputNode.json');
+const PromptNodeDef = require('../nodes/PromptNode.json');
+const LLMNodeDef = require('../nodes/LLMNode.json');
+const SummarizerNodeDef = require('../nodes/SummarizerNode.json');
+const OutputNodeDef = require('../nodes/OutputNode.json');
 
 // Define the NodeDefinition type
 export interface NodeDefinition {
