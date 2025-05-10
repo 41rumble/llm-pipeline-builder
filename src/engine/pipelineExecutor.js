@@ -44,6 +44,9 @@ export class PipelineExecutor {
     this.queue = [];
     this.fanOutTracking = {};
     
+    // Initialize global executing node ID
+    window.executingNodeId = null;
+    
     // Find input nodes (nodes with no incoming edges)
     const inputNodes = this.executionOrder.filter(node => 
       !this.pipeline.edges.some(edge => edge.target === node.id)
@@ -71,6 +74,9 @@ export class PipelineExecutor {
       !this.pipeline.edges.some(edge => edge.source === node.id)
     );
     
+    // Clear the executing node ID
+    window.executingNodeId = null;
+    
     // Return results from output nodes
     if (outputNodes.length === 1) {
       return this.results[outputNodes[0].id];
@@ -92,6 +98,12 @@ export class PipelineExecutor {
     }
     
     console.log(`Executing node: ${node.type} (${nodeId})`);
+    
+    // Emit an event to notify that this node is being executed
+    this.emitNodeExecutionEvent(nodeId);
+    
+    // Set the global executing node ID for UI highlighting
+    window.executingNodeId = nodeId;
     
     let result;
     
@@ -297,5 +309,18 @@ export class PipelineExecutor {
   async executeOutputNode(node, context) {
     // For output nodes, we just pass through the input
     return context.currentInput;
+  }
+  
+  /**
+   * Emit a custom event to notify that a node is being executed
+   */
+  emitNodeExecutionEvent(nodeId) {
+    // Create and dispatch a custom event
+    const event = new CustomEvent('nodeExecution', {
+      detail: { nodeId }
+    });
+    
+    // Dispatch the event
+    window.dispatchEvent(event);
   }
 }

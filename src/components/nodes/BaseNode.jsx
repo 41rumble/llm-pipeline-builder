@@ -1,11 +1,15 @@
-import { memo } from 'react';
-import { Handle, Position } from 'reactflow';
+import { memo, useContext } from 'react';
+import { Handle, Position, useReactFlow } from 'reactflow';
 
 // Custom node component with dark theme styling
-const BaseNode = ({ data, isConnectable }) => {
+const BaseNode = ({ id, data, isConnectable, selected }) => {
   const hasInputs = data.type !== 'input';
   const hasOutputs = data.type !== 'output';
-
+  const { getNodes } = useReactFlow();
+  
+  // Check if this node is currently executing
+  const isExecuting = window.executingNodeId === id;
+  
   // Apply custom styling to remove the white background
   const nodeStyle = {
     background: 'transparent', // Make the node background transparent
@@ -17,7 +21,12 @@ const BaseNode = ({ data, isConnectable }) => {
 
   return (
     <div style={nodeStyle}>
-      <div className={`node-container node-${data.type}`}>
+      <div 
+        className={`node-container node-${data.type} ${isExecuting ? 'node-executing' : ''}`}
+        style={isExecuting ? { 
+          boxShadow: '0 0 0 2px #f59e0b, 0 0 15px rgba(245, 158, 11, 0.5)',
+          animation: 'pulse 1.5s infinite'
+        } : undefined}>
         {hasInputs && (
           <Handle
             type="target"

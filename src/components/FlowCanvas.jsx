@@ -34,6 +34,9 @@ const FlowCanvas = ({ onExecute }) => {
   const reactFlowWrapper = useRef(null);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   
+  // Execution states
+  const [executingNodeId, setExecutingNodeId] = useState(null);
+  
   // Context menu states
   const [contextMenu, setContextMenu] = useState(null);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
@@ -245,13 +248,41 @@ const FlowCanvas = ({ onExecute }) => {
   };
   
   // Execute the current flow
-  const handleExecuteFlow = () => {
+  const handleExecuteFlow = async () => {
     if (onExecute && reactFlowInstance) {
+      // Clear any previous executing node highlight
+      setExecutingNodeId(null);
+      
       const pipeline = exportToJSON(
         reactFlowInstance.getNodes(),
         reactFlowInstance.getEdges()
       );
-      onExecute(pipeline);
+      
+      // Create a modified version of onExecute that tracks node execution
+      const executeWithTracking = async (pipelineData) => {
+        try {
+          // Set up a listener for node execution events
+          window.addEventListener('nodeExecution', (event) => {
+            if (event.detail && event.detail.nodeId) {
+              setExecutingNodeId(event.detail.nodeId);
+            }
+          }, { once: false });
+          
+          // Execute the pipeline
+          const result = await onExecute(pipelineData);
+          
+          // Clear executing node highlight when done
+          setExecutingNodeId(null);
+          
+          return result;
+        } catch (error) {
+          // Clear executing node highlight on error
+          setExecutingNodeId(null);
+          throw error;
+        }
+      };
+      
+      return executeWithTracking(pipeline);
     }
   };
 
