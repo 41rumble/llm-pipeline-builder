@@ -12,6 +12,13 @@ const BaseNode = ({ data, isConnectable }) => {
           type="target"
           position={Position.Top}
           isConnectable={isConnectable}
+          style={{ 
+            top: -4,
+            width: 8,
+            height: 8,
+            background: '#3f3f5c',
+            border: '2px solid #6e6e8e'
+          }}
         />
       )}
       
@@ -43,6 +50,13 @@ const BaseNode = ({ data, isConnectable }) => {
           type="source"
           position={Position.Bottom}
           isConnectable={isConnectable}
+          style={{ 
+            bottom: -4,
+            width: 8,
+            height: 8,
+            background: '#3f3f5c',
+            border: '2px solid #6e6e8e'
+          }}
         />
       )}
     </div>
