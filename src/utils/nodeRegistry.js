@@ -1,10 +1,11 @@
-// Import node definitions
-// Using require instead of import for JSON files to avoid TypeScript issues
-const InputNodeDef = require('../nodes/InputNode.json');
-const PromptNodeDef = require('../nodes/PromptNode.json');
-const LLMNodeDef = require('../nodes/LLMNode.json');
-const SummarizerNodeDef = require('../nodes/SummarizerNode.json');
-const OutputNodeDef = require('../nodes/OutputNode.json');
+// Import node definitions from JavaScript file
+import { 
+  InputNodeDef, 
+  PromptNodeDef, 
+  LLMNodeDef, 
+  SummarizerNodeDef, 
+  OutputNodeDef 
+} from '../nodes/nodes.js';
 
 // Create a registry of all node definitions
 const nodeRegistry = {
