@@ -218,6 +218,8 @@ body {
 .node-executing {
   animation: pulse 1.5s infinite;
   z-index: 10;
+  box-shadow: 0 0 0 3px #f59e0b, 0 0 20px rgba(245, 158, 11, 0.7) !important;
+  border: 1px solid #f59e0b !important;
 }
 
 /* Execution panel */
@@ -259,6 +261,9 @@ body {
 
 .execution-panel-section {
   margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .execution-panel-section-title {
@@ -268,6 +273,30 @@ body {
   margin-bottom: 8px;
   padding-bottom: 4px;
   border-bottom: 1px solid #3f3f5c;
+}
+
+.execution-result-container {
+  background: #34344a;
+  padding: 15px;
+  border-radius: 4px;
+  overflow: auto;
+  flex: 1;
+  min-height: 200px;
+  max-height: 600px;
+  border: 1px solid #3f3f5c;
+  display: flex;
+  flex-direction: column;
+}
+
+.execution-result-content {
+  margin: 0;
+  font-family: 'Fira Code', 'Courier New', monospace;
+  color: #e0e0e0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  flex: 1;
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 /* Form elements */
@@ -687,13 +716,16 @@ body {
 
 @keyframes pulse {
   0% {
-    box-shadow: 0 0 0 2px #f59e0b, 0 0 15px rgba(245, 158, 11, 0.5);
+    box-shadow: 0 0 0 3px #f59e0b, 0 0 15px rgba(245, 158, 11, 0.5);
+    border-color: #f59e0b;
   }
   50% {
-    box-shadow: 0 0 0 2px #f59e0b, 0 0 25px rgba(245, 158, 11, 0.8);
+    box-shadow: 0 0 0 3px #f59e0b, 0 0 30px rgba(245, 158, 11, 0.9);
+    border-color: #ffb52b;
   }
   100% {
-    box-shadow: 0 0 0 2px #f59e0b, 0 0 15px rgba(245, 158, 11, 0.5);
+    box-shadow: 0 0 0 3px #f59e0b, 0 0 15px rgba(245, 158, 11, 0.5);
+    border-color: #f59e0b;
   }
 }
 

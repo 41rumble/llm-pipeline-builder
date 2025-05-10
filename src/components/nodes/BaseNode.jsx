@@ -22,11 +22,7 @@ const BaseNode = ({ id, data, isConnectable, selected }) => {
   return (
     <div style={nodeStyle}>
       <div 
-        className={`node-container node-${data.type} ${isExecuting ? 'node-executing' : ''}`}
-        style={isExecuting ? { 
-          boxShadow: '0 0 0 2px #f59e0b, 0 0 15px rgba(245, 158, 11, 0.5)',
-          animation: 'pulse 1.5s infinite'
-        } : undefined}>
+        className={`node-container node-${data.type} ${isExecuting ? 'node-executing' : ''}`}>
         {hasInputs && (
           <Handle
             type="target"

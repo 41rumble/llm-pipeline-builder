@@ -37,6 +37,11 @@ const FlowCanvas = ({ onExecute }) => {
   // Execution states
   const [executingNodeId, setExecutingNodeId] = useState(null);
   
+  // Make executingNodeId available globally for node highlighting
+  useEffect(() => {
+    window.executingNodeId = executingNodeId;
+  }, [executingNodeId]);
+  
   // Context menu states
   const [contextMenu, setContextMenu] = useState(null);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
