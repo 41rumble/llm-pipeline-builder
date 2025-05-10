@@ -279,61 +279,74 @@ const FlowCanvas = ({ onExecute }) => {
             <Background />
             
             {/* Node Palette */}
-            <Panel position="top-left" style={{ background: 'white', padding: '10px', borderRadius: '5px', boxShadow: '0 0 10px rgba(0,0,0,0.1)' }}>
-              <h3 style={{ margin: '0 0 10px 0' }}>Node Palette</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {nodePaletteItems.map((item) => (
-                  <div
-                    key={item.type}
-                    draggable
-                    onDragStart={(event) => {
-                      event.dataTransfer.setData('application/reactflow/type', item.type);
-                      event.dataTransfer.effectAllowed = 'move';
-                    }}
-                    style={{
-                      padding: '8px',
-                      border: '1px solid #ddd',
-                      borderRadius: '4px',
-                      cursor: 'grab',
-                      background: '#f5f5f5',
-                    }}
-                  >
-                    <div style={{ fontWeight: 'bold' }}>{item.name}</div>
-                    <div style={{ fontSize: '0.8em', color: '#666' }}>{item.description}</div>
-                  </div>
-                ))}
+            <Panel position="top-left">
+              <div style={{ 
+                background: 'white', 
+                padding: '15px', 
+                borderRadius: '5px', 
+                boxShadow: '0 0 10px rgba(0,0,0,0.1)',
+                width: '250px'
+              }}>
+                <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', fontWeight: '600' }}>Node Palette</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {nodePaletteItems.map((item) => (
+                    <div
+                      key={item.type}
+                      draggable
+                      onDragStart={(event) => {
+                        event.dataTransfer.setData('application/reactflow/type', item.type);
+                        event.dataTransfer.effectAllowed = 'move';
+                      }}
+                      style={{
+                        padding: '10px',
+                        border: '1px solid #e5e7eb',
+                        borderLeft: `4px solid ${
+                          item.type === 'input' ? '#3b82f6' : 
+                          item.type === 'prompt' ? '#6366f1' : 
+                          item.type === 'llm' ? '#8b5cf6' : 
+                          item.type === 'summarizer' ? '#a78bfa' : 
+                          item.type === 'output' ? '#10b981' : '#d1d5db'
+                        }`,
+                        borderRadius: '4px',
+                        cursor: 'grab',
+                        background: 'white',
+                        transition: 'all 0.2s',
+                        boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                      }}
+                    >
+                      <div style={{ fontWeight: '600', marginBottom: '4px' }}>{item.name}</div>
+                      <div style={{ fontSize: '0.8em', color: '#6b7280' }}>{item.description}</div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </Panel>
             
             {/* Action Buttons */}
-            <Panel position="top-right" style={{ display: 'flex', gap: '10px' }}>
-              <button
-                className="execute-pipeline-button"
-                onClick={handleExecuteFlow}
-                style={{
-                  padding: '8px 15px',
-                  background: '#2196F3',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                }}
-              >
-                Execute Pipeline
-              </button>
-              <button
-                onClick={handleExportFlow}
-                style={{
-                  padding: '8px 15px',
-                  background: '#4CAF50',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                }}
-              >
-                Export Pipeline
-              </button>
+            <Panel position="top-right">
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  className="btn btn-primary execute-pipeline-button"
+                  onClick={handleExecuteFlow}
+                >
+                  Execute Pipeline
+                </button>
+                <button
+                  className="btn btn-primary"
+                  onClick={handleExportFlow}
+                  style={{ backgroundColor: '#10b981' }}
+                >
+                  Export Pipeline
+                </button>
+              </div>
             </Panel>
           </ReactFlow>
         </div>
