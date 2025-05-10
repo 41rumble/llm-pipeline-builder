@@ -1,4 +1,19 @@
-import { NodeProps } from 'reactflow';
+import type { Node } from 'reactflow';
+
+// Define our own NodeProps type since it's not directly exported from reactflow
+export interface NodeProps<T = any> {
+  id: string;
+  type: string;
+  data: T;
+  selected: boolean;
+  isConnectable: boolean;
+  xPos: number;
+  yPos: number;
+  dragging: boolean;
+  zIndex: number;
+  targetPosition?: string;
+  sourcePosition?: string;
+}
 
 // Define the data structure for each node type
 export interface BaseNodeData {
