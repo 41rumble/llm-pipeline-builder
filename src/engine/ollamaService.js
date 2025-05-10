@@ -26,15 +26,10 @@ export const generateText = async (model, prompt, options = {}) => {
   console.log(`[Ollama] Calling ${model} with prompt: ${prompt.substring(0, 50)}...`);
   
   try {
-    // Prepare the request to the Ollama API for the chat endpoint
-    const chatRequest = {
+    // Prepare the request to the Ollama API for the generate endpoint
+    const generateRequest = {
       model: model || "phi:latest", // Use a smaller model by default
-      messages: [
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
+      prompt: prompt,
       stream: false,
       options: {
         temperature: options.temperature || 0.7,
@@ -42,16 +37,16 @@ export const generateText = async (model, prompt, options = {}) => {
       }
     };
     
-    console.log(`Connecting to Ollama at ${OLLAMA_SERVER_URL}/api/chat`);
+    console.log(`Connecting to Ollama at ${OLLAMA_SERVER_URL}/api/generate`);
     
-    // Make the API call to the Ollama chat endpoint
-    const response = await fetch(`${OLLAMA_SERVER_URL}/api/chat`, {
+    // Make the API call to the Ollama generate endpoint
+    const response = await fetch(`${OLLAMA_SERVER_URL}/api/generate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
-      body: JSON.stringify(chatRequest),
+      body: JSON.stringify(generateRequest),
       mode: 'cors' // Try with CORS mode
     });
     
@@ -61,13 +56,10 @@ export const generateText = async (model, prompt, options = {}) => {
     
     const data = await response.json();
     
-    // Extract the response from the chat API format
+    // Extract the response from the generate API format
     let responseText = "";
-    if (data.message && data.message.content) {
-      // Chat API format
-      responseText = data.message.content;
-    } else if (data.response) {
-      // Generate API format (fallback)
+    if (data.response) {
+      // Generate API format
       responseText = data.response;
     } else {
       // Unknown format
