@@ -111,6 +111,50 @@ const FlowCanvas = ({ onExecute }) => {
     };
   }, []);
   
+  // Add keyboard shortcuts for panning
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (!reactFlowInstance) return;
+      
+      const panAmount = 100;
+      const currentViewport = reactFlowInstance.getViewport();
+      
+      switch (event.key) {
+        case 'ArrowUp':
+          reactFlowInstance.setViewport({ 
+            ...currentViewport, 
+            y: currentViewport.y + panAmount 
+          });
+          break;
+        case 'ArrowDown':
+          reactFlowInstance.setViewport({ 
+            ...currentViewport, 
+            y: currentViewport.y - panAmount 
+          });
+          break;
+        case 'ArrowLeft':
+          reactFlowInstance.setViewport({ 
+            ...currentViewport, 
+            x: currentViewport.x + panAmount 
+          });
+          break;
+        case 'ArrowRight':
+          reactFlowInstance.setViewport({ 
+            ...currentViewport, 
+            x: currentViewport.x - panAmount 
+          });
+          break;
+        default:
+          break;
+      }
+    };
+    
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [reactFlowInstance]);
+  
   // Create a new node from context menu
   const createNodeFromContextMenu = useCallback(
     (nodeType) => {
@@ -140,7 +184,22 @@ const FlowCanvas = ({ onExecute }) => {
       setNodes(newNodes);
       setContextMenu(null);
       
-      // Don't automatically adjust the viewport - let the user control it
+      // Manually position the viewport to show the new node
+      if (reactFlowInstance) {
+        // Use a timeout to ensure the node is added before adjusting the view
+        setTimeout(() => {
+          // Calculate a viewport that shows the new node
+          const nodeX = newNode.position.x;
+          const nodeY = newNode.position.y;
+          
+          // Set the viewport to center on the new node
+          reactFlowInstance.setViewport({ 
+            x: -nodeX + window.innerWidth / 4, 
+            y: -nodeY + window.innerHeight / 4, 
+            zoom: 1 
+          });
+        }, 50);
+      }
     },
     [contextMenu, reactFlowInstance, setNodes, nodes]
   );
@@ -188,7 +247,22 @@ const FlowCanvas = ({ onExecute }) => {
       const newNodes = [...nodes, newNode];
       setNodes(newNodes);
       
-      // Don't automatically adjust the viewport - let the user control it
+      // Manually position the viewport to show the new node
+      if (reactFlowInstance) {
+        // Use a timeout to ensure the node is added before adjusting the view
+        setTimeout(() => {
+          // Calculate a viewport that shows the new node
+          const nodeX = newNode.position.x;
+          const nodeY = newNode.position.y;
+          
+          // Set the viewport to center on the new node
+          reactFlowInstance.setViewport({ 
+            x: -nodeX + window.innerWidth / 4, 
+            y: -nodeY + window.innerHeight / 4, 
+            zoom: 1 
+          });
+        }, 50);
+      }
     },
     [reactFlowInstance, setNodes, nodes]
   );
@@ -286,10 +360,33 @@ const FlowCanvas = ({ onExecute }) => {
     description: nodeDef.description
   }));
 
+  // Handle manual scrolling with mouse wheel
+  const handleWheel = useCallback((event) => {
+    if (!reactFlowInstance || event.ctrlKey || event.metaKey) return; // Let React Flow handle zooming
+    
+    event.preventDefault();
+    
+    const currentViewport = reactFlowInstance.getViewport();
+    
+    // Determine scroll direction and amount
+    const scrollX = event.shiftKey ? event.deltaY : 0;
+    const scrollY = !event.shiftKey ? event.deltaY : 0;
+    
+    // Update viewport
+    reactFlowInstance.setViewport({
+      x: currentViewport.x - scrollX,
+      y: currentViewport.y - scrollY,
+      zoom: currentViewport.zoom
+    });
+  }, [reactFlowInstance]);
+
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
       <ReactFlowProvider>
-        <div ref={reactFlowWrapper} style={{ width: '100%', height: '100%', display: 'flex', flex: 1 }}>
+        <div 
+          ref={reactFlowWrapper} 
+          style={{ width: '100%', height: '100%', display: 'flex', flex: 1 }}
+          onWheel={handleWheel}>
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -307,8 +404,9 @@ const FlowCanvas = ({ onExecute }) => {
             maxZoom={4}
             zoomOnScroll={true}
             zoomOnPinch={true}
-            panOnScroll={true}
+            panOnScroll={false}
             panOnDrag={true}
+            onlyRenderVisibleElements={false}
             attributionPosition="bottom-right"
           >
             <Controls showFitView={true} />
