@@ -7,7 +7,8 @@ import ReactFlow, {
   Controls,
   Background,
   ConnectionLineType,
-  Panel
+  Panel,
+  MiniMap
 } from 'reactflow';
 import 'reactflow/dist/base.css';
 import 'reactflow/dist/style.css';
@@ -16,6 +17,7 @@ import { v4 as uuidv4 } from 'uuid';
 import BaseNode from './nodes/BaseNode';
 import NodeConfigPanel from './NodeConfigPanel';
 import NodeTypeDebugger from './NodeTypeDebugger';
+import NavigationHUD from './NavigationHUD';
 import nodeRegistry, { getAllNodeDefs } from '../utils/nodeRegistry';
 import { exportToJSON } from '../utils/exportUtils';
 
@@ -350,11 +352,26 @@ const FlowCanvas = ({ onExecute }) => {
             onContextMenu={onContextMenu}
             onPaneClick={onPaneClick}
             nodeTypes={nodeTypes}
-            fitView
+            defaultViewport={{ x: 0, y: 0, zoom: 1 }}
             attributionPosition="bottom-right"
           >
             <Controls showFitView={true} />
             <Background variant="dots" gap={12} size={1} />
+            <MiniMap 
+              nodeStrokeColor="#3f3f5c"
+              nodeColor="#2a2a3c"
+              nodeBorderRadius={2}
+              maskColor="rgba(30, 30, 46, 0.5)"
+              style={{ 
+                position: 'absolute', 
+                bottom: 10, 
+                right: 10,
+                backgroundColor: '#1e1e2e',
+                border: '1px solid #3f3f5c',
+                borderRadius: '4px'
+              }}
+            />
+            <NavigationHUD />
             <NodeTypeDebugger />
             
             {/* Node Palette */}
