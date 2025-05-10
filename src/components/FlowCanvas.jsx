@@ -139,14 +139,27 @@ const FlowCanvas = ({ onExecute }) => {
   const handleUpdateNode = useCallback((updatedData) => {
     if (!selectedNode) return;
     
-    console.log('Updating node:', selectedNode.id, 'Type:', updatedData.type);
+    console.log('Updating node:', selectedNode.id, 'Type:', updatedData.type || selectedNode.data.type);
+    
+    // Store the update for debugging
+    window._lastNodeUpdate = {
+      selectedNode,
+      updatedData
+    };
     
     setNodes((nds) => 
       nds.map((node) => {
         if (node.id === selectedNode.id) {
+          // Create a new data object that preserves the node type
+          const newData = {
+            ...updatedData,
+            type: selectedNode.data.type,
+            label: selectedNode.data.label
+          };
+          
           return {
             ...node,
-            data: updatedData
+            data: newData
           };
         }
         return node;

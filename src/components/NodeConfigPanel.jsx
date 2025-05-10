@@ -22,13 +22,7 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
     
     // Set the new node data
     if (selectedNode) {
-      console.log('Setting node data in config panel:', 
-        selectedNode.id, 
-        'Type:', selectedNode.data?.type
-      );
-      
-      // Just use the selected node directly
-      setNodeData(selectedNode);
+      setNodeData({ ...selectedNode });
     } else {
       setNodeData(null);
     }
@@ -37,13 +31,8 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
   // Auto-save when component unmounts
   useEffect(() => {
     return () => {
-      if (nodeData && nodeData.data) {
-        console.log('Auto-saving node on unmount:', 
-          nodeData.id, 
-          'Type:', nodeData.data.type
-        );
-        
-        onUpdateNode(nodeData.data);
+      if (nodeData) {
+        onUpdateNode(nodeData);
       }
     };
   }, [nodeData, onUpdateNode]);
@@ -114,27 +103,14 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
   };
 
   const handleSave = () => {
-    if (nodeData && nodeData.data) {
-      console.log('Saving node:', 
-        nodeData.id, 
-        'Type:', nodeData.data.type
-      );
-      
-      onUpdateNode(nodeData.data);
+    if (nodeData) {
+      onUpdateNode(nodeData);
     }
     onClose();
   };
 
   // Get the node definition from the registry
-  // Use the data type directly to avoid undefined issues
-  const nodeType = nodeData.data?.type;
-  const nodeDef = nodeRegistry[nodeType];
-  
-  console.log('Node definition lookup:', {
-    nodeType,
-    nodeDef: nodeDef ? 'Found' : 'Not found',
-    availableTypes: Object.keys(nodeRegistry)
-  });
+  const nodeDef = nodeRegistry[nodeData.type];
   
   return (
     <div className="node-config-panel">
