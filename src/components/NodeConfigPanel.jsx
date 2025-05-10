@@ -111,19 +111,24 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
   };
 
   // Get the node definition from the registry
-  const nodeDef = nodeRegistry[nodeData.type];
+  const nodeType = nodeData?.type;
+  const nodeDef = nodeType ? nodeRegistry[nodeType] : null;
+  
+  // Get the node parameters and label
+  const nodeParams = nodeData?.params || {};
+  const nodeLabel = nodeData?.label || 'Node';
   
   return (
     <div className="node-config-panel">
       <div className="node-config-header">
-        <h3 className="node-config-title">{nodeData.label} Configuration</h3>
+        <h3 className="node-config-title">{nodeLabel} Configuration</h3>
         <div className="node-config-subtitle">
           {nodeDef?.description || 'Configure node parameters'}
         </div>
       </div>
 
       <div className="node-config-content">
-        {Object.entries(nodeData.params).map(([key, value]) => {
+        {Object.entries(nodeParams).map(([key, value]) => {
           // Handle nested objects (like llm config)
           if (typeof value === 'object' && value !== null) {
             return (
