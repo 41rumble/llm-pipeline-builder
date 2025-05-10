@@ -6,13 +6,7 @@ const BaseNode = ({ data, isConnectable }) => {
   const hasOutputs = data.type !== 'output';
 
   return (
-    <div className="node-container" style={{ 
-      background: '#f5f5f5', 
-      border: '1px solid #ddd',
-      borderRadius: '5px',
-      padding: '10px',
-      width: '200px'
-    }}>
+    <div className={`node-container node-${data.type}`}>
       {hasInputs && (
         <Handle
           type="target"
@@ -21,13 +15,9 @@ const BaseNode = ({ data, isConnectable }) => {
         />
       )}
       
-      <div className="node-header" style={{ 
-        borderBottom: '1px solid #ddd',
-        marginBottom: '8px',
-        paddingBottom: '5px'
-      }}>
-        <div style={{ fontWeight: 'bold' }}>{data.label}</div>
-        <div style={{ fontSize: '0.8em', color: '#666' }}>{data.type}</div>
+      <div className="node-header">
+        <h4 className="node-title">{data.label}</h4>
+        <div className="node-subtitle">{data.type}</div>
       </div>
       
       <div className="node-content">
@@ -40,8 +30,9 @@ const BaseNode = ({ data, isConnectable }) => {
               : value;
               
           return (
-            <div key={key} className="node-param" style={{ fontSize: '0.9em', marginBottom: '3px' }}>
-              <span style={{ fontWeight: 'bold' }}>{key}:</span> {displayValue}
+            <div key={key} className="node-param">
+              <span className="node-param-label">{key}:</span>
+              <span className="node-param-value">{displayValue}</span>
             </div>
           );
         })}

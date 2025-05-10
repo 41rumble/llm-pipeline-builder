@@ -58,46 +58,41 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
   const nodeDef = nodeRegistry[nodeData.type];
   
   return (
-    <div className="node-config-panel" style={{
-      position: 'absolute',
-      right: 0,
-      top: 0,
-      width: '300px',
-      height: '100%',
-      background: 'white',
-      borderLeft: '1px solid #ddd',
-      padding: '20px',
-      boxShadow: '-2px 0 5px rgba(0,0,0,0.1)',
-      zIndex: 10,
-      overflowY: 'auto'
-    }}>
-      <div className="panel-header" style={{ marginBottom: '20px' }}>
-        <h3 style={{ margin: '0 0 10px 0' }}>{nodeData.label} Configuration</h3>
-        <div style={{ color: '#666', fontSize: '0.9em' }}>
+    <div className="node-config-panel animate-slide-in-right">
+      <div className="node-config-header">
+        <h3 className="node-config-title">{nodeData.label} Configuration</h3>
+        <div className="node-config-subtitle">
           {nodeDef?.description || 'Configure node parameters'}
         </div>
       </div>
 
-      <div className="panel-content">
+      <div className="node-config-content">
         {Object.entries(nodeData.params).map(([key, value]) => {
           // Handle nested objects (like llm config)
           if (typeof value === 'object' && value !== null) {
             return (
-              <div key={key} className="param-group" style={{ marginBottom: '20px' }}>
-                <h4 style={{ marginBottom: '10px', borderBottom: '1px solid #eee', paddingBottom: '5px' }}>
+              <div key={key} className="node-config-section">
+                <h4 className="node-config-section-title">
                   {key.charAt(0).toUpperCase() + key.slice(1)} Settings
                 </h4>
                 {Object.entries(value).map(([childKey, childValue]) => (
-                  <div key={`${key}-${childKey}`} className="param-field" style={{ marginBottom: '10px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                  <div key={`${key}-${childKey}`} className="form-group">
+                    <label className="form-label">
                       {childKey.charAt(0).toUpperCase() + childKey.slice(1)}:
                     </label>
                     {typeof childValue === 'boolean' ? (
-                      <input
-                        type="checkbox"
-                        checked={childValue}
-                        onChange={(e) => handleNestedChange(key, childKey, e.target.checked)}
-                      />
+                      <div className="form-check">
+                        <input
+                          type="checkbox"
+                          id={`${key}-${childKey}`}
+                          checked={childValue}
+                          onChange={(e) => handleNestedChange(key, childKey, e.target.checked)}
+                          className="form-check-input"
+                        />
+                        <label htmlFor={`${key}-${childKey}`} className="form-check-label">
+                          {childValue ? 'Enabled' : 'Disabled'}
+                        </label>
+                      </div>
                     ) : (
                       <input
                         type={typeof childValue === 'number' ? 'number' : 'text'}
@@ -107,7 +102,7 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
                           childKey, 
                           typeof childValue === 'number' ? parseFloat(e.target.value) : e.target.value
                         )}
-                        style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+                        className="form-control"
                       />
                     )}
                   </div>
@@ -118,22 +113,30 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
           
           // Handle primitive values
           return (
-            <div key={key} className="param-field" style={{ marginBottom: '15px' }}>
-              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+            <div key={key} className="form-group">
+              <label className="form-label">
                 {key.charAt(0).toUpperCase() + key.slice(1)}:
               </label>
               {typeof value === 'boolean' ? (
-                <input
-                  type="checkbox"
-                  checked={value}
-                  onChange={(e) => handleChange(key, e.target.checked)}
-                />
+                <div className="form-check">
+                  <input
+                    type="checkbox"
+                    id={key}
+                    checked={value}
+                    onChange={(e) => handleChange(key, e.target.checked)}
+                    className="form-check-input"
+                  />
+                  <label htmlFor={key} className="form-check-label">
+                    {value ? 'Enabled' : 'Disabled'}
+                  </label>
+                </div>
               ) : key === 'template' ? (
                 <textarea
                   value={value}
                   onChange={(e) => handleChange(key, e.target.value)}
                   rows={5}
-                  style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+                  className="form-control"
+                  placeholder="Enter template text..."
                 />
               ) : (
                 <input
@@ -143,7 +146,8 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
                     key, 
                     typeof value === 'number' ? parseFloat(e.target.value) : e.target.value
                   )}
-                  style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+                  className="form-control"
+                  placeholder={`Enter ${key}...`}
                 />
               )}
             </div>
@@ -151,18 +155,18 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
         })}
       </div>
 
-      <div className="panel-footer" style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between' }}>
+      <div className="node-config-footer">
         <button 
           onClick={onClose}
-          style={{ padding: '8px 15px', background: '#f5f5f5', border: '1px solid #ddd', borderRadius: '4px' }}
+          className="btn btn-ghost"
         >
           Cancel
         </button>
         <button 
           onClick={handleSave}
-          style={{ padding: '8px 15px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px' }}
+          className="btn btn-primary"
         >
-          Save
+          Save Changes
         </button>
       </div>
     </div>
