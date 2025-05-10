@@ -1,8 +1,17 @@
 import { memo } from 'react';
 import { Handle, Position } from 'reactflow';
-import { CustomNodeProps } from '../CustomNodeProps';
+import type { NodeData } from '../NodeTypes';
 
-const BaseNode = ({ data, isConnectable }: CustomNodeProps) => {
+// Define the props directly in this file
+interface BaseNodeProps {
+  id: string;
+  type: string;
+  data: NodeData;
+  selected: boolean;
+  isConnectable: boolean;
+}
+
+const BaseNode = ({ data, isConnectable }: BaseNodeProps) => {
   const hasInputs = data.type !== 'input';
   const hasOutputs = data.type !== 'output';
 
