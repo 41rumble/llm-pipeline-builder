@@ -137,6 +137,13 @@ const FlowCanvas = ({ onExecute }) => {
       
       setNodes((nds) => nds.concat(newNode));
       setContextMenu(null);
+      
+      // Prevent automatic zoom by setting viewport manually
+      if (reactFlowInstance) {
+        setTimeout(() => {
+          reactFlowInstance.setViewport({ x: 0, y: 0, zoom: 1 });
+        }, 50);
+      }
     },
     [contextMenu, reactFlowInstance, setNodes]
   );
@@ -182,6 +189,13 @@ const FlowCanvas = ({ onExecute }) => {
       };
 
       setNodes((nds) => nds.concat(newNode));
+      
+      // Prevent automatic zoom by setting viewport manually
+      if (reactFlowInstance) {
+        setTimeout(() => {
+          reactFlowInstance.setViewport({ x: 0, y: 0, zoom: 1 });
+        }, 50);
+      }
     },
     [reactFlowInstance, setNodes]
   );
@@ -257,9 +271,9 @@ const FlowCanvas = ({ onExecute }) => {
   }));
 
   return (
-    <div style={{ width: '100%', height: '100vh', position: 'relative' }}>
+    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
       <ReactFlowProvider>
-        <div ref={reactFlowWrapper} style={{ width: '100%', height: '100%' }}>
+        <div ref={reactFlowWrapper} style={{ width: '100%', height: '100%', display: 'flex', flex: 1 }}>
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -272,11 +286,13 @@ const FlowCanvas = ({ onExecute }) => {
             onDragOver={onDragOver}
             onContextMenu={onContextMenu}
             nodeTypes={nodeTypes}
-            fitView
+            defaultViewport={{ x: 0, y: 0, zoom: 1 }}
+            minZoom={0.5}
+            maxZoom={2}
             attributionPosition="bottom-right"
           >
-            <Controls />
-            <Background />
+            <Controls showFitView={true} />
+            <Background variant="dots" gap={12} size={1} />
             
             {/* Node Palette */}
             <Panel position="top-left">

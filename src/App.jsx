@@ -59,8 +59,8 @@ function App() {
         </div>
       </header>
       
-      <div className="app-content">
-        <div className="flow-container" style={{ flex: showExecutionPanel ? '70%' : '100%' }}>
+      <div className="app-content" style={{ display: 'flex', flex: 1, width: '100%', height: 'calc(100vh - 72px)' }}>
+        <div className="flow-container" style={{ flex: showExecutionPanel ? '70%' : '100%', width: showExecutionPanel ? '70%' : '100%' }}>
           <FlowCanvas onExecute={handleExecutePipeline} />
         </div>
         
