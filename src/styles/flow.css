@@ -1,8 +1,8 @@
-/* React Flow Custom Styling */
+/* React Flow Custom Styling - ComfyUI inspired */
 
 /* Canvas and container */
 .react-flow {
-  background-color: var(--background-color);
+  background-color: #1e1e2e; /* Dark background like ComfyUI */
 }
 
 .react-flow__renderer {
@@ -15,96 +15,91 @@
 
 /* Nodes */
 .react-flow__node {
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  transition: box-shadow var(--transition-fast) ease-in-out;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition: box-shadow 0.2s ease-in-out;
 }
 
 .react-flow__node:hover {
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
 }
 
 .react-flow__node.selected {
-  box-shadow: 0 0 0 2px var(--primary-color), var(--shadow-lg);
+  box-shadow: 0 0 0 2px var(--primary-color), 0 4px 8px rgba(0, 0, 0, 0.4);
 }
 
 /* Node types */
 .node-container {
-  min-width: 220px;
-  border-radius: var(--radius-lg);
+  width: 200px;
+  border-radius: 4px;
   font-family: var(--font-family);
-  transition: all var(--transition-fast) ease-in-out;
+  transition: all 0.2s ease-in-out;
+  background-color: #2d2d3a; /* Dark node background */
+  border: 1px solid #3f3f5c;
+  color: #e0e0e0; /* Light text for dark background */
 }
 
 .node-input {
-  background: linear-gradient(to bottom, #e0f2fe, #bfdbfe);
-  border: 1px solid #93c5fd;
+  border-top: 3px solid #4285f4; /* Blue for input nodes */
 }
 
 .node-prompt {
-  background: linear-gradient(to bottom, #dbeafe, #bfdbfe);
-  border: 1px solid #93c5fd;
+  border-top: 3px solid #5e72e4; /* Indigo for prompt nodes */
 }
 
 .node-llm {
-  background: linear-gradient(to bottom, #c7d2fe, #a5b4fc);
-  border: 1px solid #818cf8;
+  border-top: 3px solid #8b5cf6; /* Purple for LLM nodes */
 }
 
 .node-summarizer {
-  background: linear-gradient(to bottom, #e0e7ff, #c7d2fe);
-  border: 1px solid #a5b4fc;
+  border-top: 3px solid #a78bfa; /* Lavender for summarizer nodes */
 }
 
 .node-output {
-  background: linear-gradient(to bottom, #bbf7d0, #86efac);
-  border: 1px solid #4ade80;
+  border-top: 3px solid #10b981; /* Green for output nodes */
 }
 
 /* Node header */
 .node-header {
-  padding: var(--spacing-3);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  border-top-left-radius: var(--radius-lg);
-  border-top-right-radius: var(--radius-lg);
-  background-color: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(4px);
+  padding: 8px 10px;
+  border-bottom: 1px solid #3f3f5c;
+  background-color: #34344a;
 }
 
 .node-title {
   font-weight: 600;
-  font-size: var(--font-size-md);
-  color: var(--text-primary);
+  font-size: 14px;
+  color: #e0e0e0;
   margin: 0;
 }
 
 .node-subtitle {
-  font-size: var(--font-size-xs);
-  color: var(--text-secondary);
-  margin-top: var(--spacing-1);
+  font-size: 11px;
+  color: #a0a0b0;
+  margin-top: 2px;
 }
 
 /* Node content */
 .node-content {
-  padding: var(--spacing-3);
+  padding: 8px 10px;
 }
 
 .node-param {
   display: flex;
   align-items: baseline;
-  margin-bottom: var(--spacing-2);
-  font-size: var(--font-size-sm);
+  margin-bottom: 6px;
+  font-size: 12px;
 }
 
 .node-param-label {
   font-weight: 500;
-  color: var(--text-secondary);
-  margin-right: var(--spacing-2);
+  color: #a0a0b0;
+  margin-right: 6px;
   flex-shrink: 0;
 }
 
 .node-param-value {
-  color: var(--text-primary);
+  color: #e0e0e0;
   word-break: break-word;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -112,37 +107,37 @@
 
 /* Handles */
 .react-flow__handle {
-  width: 10px;
-  height: 10px;
-  border-radius: var(--radius-full);
-  background-color: #fff;
-  border: 2px solid var(--primary-color);
-  transition: all var(--transition-fast) ease-in-out;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #3f3f5c;
+  border: 2px solid #6e6e8e;
+  transition: all 0.2s ease-in-out;
 }
 
 .react-flow__handle:hover {
-  background-color: var(--primary-light);
+  background-color: var(--primary-color);
   transform: scale(1.2);
 }
 
 .react-flow__handle-top {
-  top: -5px;
+  top: -4px;
 }
 
 .react-flow__handle-bottom {
-  bottom: -5px;
+  bottom: -4px;
 }
 
 /* Edges */
 .react-flow__edge-path {
-  stroke: var(--primary-color);
+  stroke: #6e6e8e;
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
 .react-flow__edge.selected .react-flow__edge-path {
-  stroke: var(--accent-color);
+  stroke: var(--primary-color);
   stroke-width: 3;
 }
 
@@ -159,24 +154,24 @@
 
 /* Controls */
 .react-flow__controls {
-  box-shadow: var(--shadow-md);
-  border-radius: var(--radius-md);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
   overflow: hidden;
-  background-color: var(--surface-color);
-  border: 1px solid var(--border-color);
+  background-color: #2d2d3a;
+  border: 1px solid #3f3f5c;
 }
 
 .react-flow__controls-button {
-  background-color: var(--surface-color);
+  background-color: #2d2d3a;
   border: none;
-  border-bottom: 1px solid var(--border-color);
-  color: var(--text-secondary);
-  transition: all var(--transition-fast) ease-in-out;
+  border-bottom: 1px solid #3f3f5c;
+  color: #a0a0b0;
+  transition: all 0.2s ease-in-out;
 }
 
 .react-flow__controls-button:hover {
-  background-color: var(--surface-hover);
-  color: var(--text-primary);
+  background-color: #34344a;
+  color: #e0e0e0;
 }
 
 .react-flow__controls-button:last-child {
@@ -185,105 +180,105 @@
 
 /* Background */
 .react-flow__background {
-  background-color: var(--background-color);
+  background-color: #1e1e2e;
 }
 
 .react-flow__background-pattern {
-  color: rgba(0, 0, 0, 0.05);
+  color: rgba(255, 255, 255, 0.05);
 }
 
 /* Node palette */
 .node-palette {
-  background-color: var(--surface-color);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
+  background-color: #2d2d3a;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
   overflow: hidden;
-  width: 250px;
+  width: 220px;
 }
 
 .node-palette-header {
-  background-color: var(--primary-color);
-  color: var(--text-on-primary);
-  padding: var(--spacing-3);
+  background-color: #34344a;
+  color: #e0e0e0;
+  padding: 10px;
   font-weight: 600;
-  border-top-left-radius: var(--radius-lg);
-  border-top-right-radius: var(--radius-lg);
+  border-bottom: 1px solid #3f3f5c;
 }
 
 .node-palette-content {
-  padding: var(--spacing-3);
+  padding: 10px;
   max-height: 400px;
   overflow-y: auto;
 }
 
 .node-palette-item {
-  padding: var(--spacing-3);
-  margin-bottom: var(--spacing-2);
-  border-radius: var(--radius-md);
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  border-radius: 4px;
   cursor: grab;
-  transition: all var(--transition-fast) ease-in-out;
-  border: 1px solid var(--border-color);
-  background-color: var(--surface-color);
+  transition: all 0.2s ease-in-out;
+  border: 1px solid #3f3f5c;
+  background-color: #34344a;
 }
 
 .node-palette-item:hover {
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
   transform: translateY(-2px);
 }
 
 .node-palette-item-input {
-  border-left: 4px solid #93c5fd;
+  border-left: 4px solid #4285f4;
 }
 
 .node-palette-item-prompt {
-  border-left: 4px solid #93c5fd;
+  border-left: 4px solid #5e72e4;
 }
 
 .node-palette-item-llm {
-  border-left: 4px solid #818cf8;
+  border-left: 4px solid #8b5cf6;
 }
 
 .node-palette-item-summarizer {
-  border-left: 4px solid #a5b4fc;
+  border-left: 4px solid #a78bfa;
 }
 
 .node-palette-item-output {
-  border-left: 4px solid #4ade80;
+  border-left: 4px solid #10b981;
 }
 
 .node-palette-item-title {
   font-weight: 600;
-  font-size: var(--font-size-sm);
-  margin-bottom: var(--spacing-1);
+  font-size: 13px;
+  margin-bottom: 2px;
+  color: #e0e0e0;
 }
 
 .node-palette-item-description {
-  font-size: var(--font-size-xs);
-  color: var(--text-secondary);
+  font-size: 11px;
+  color: #a0a0b0;
 }
 
 /* Action buttons */
 .action-buttons {
   display: flex;
-  gap: var(--spacing-2);
+  gap: 8px;
 }
 
 .action-button {
-  padding: var(--spacing-2) var(--spacing-4);
-  border-radius: var(--radius-md);
+  padding: 6px 12px;
+  border-radius: 4px;
   font-weight: 500;
-  font-size: var(--font-size-sm);
+  font-size: 13px;
   cursor: pointer;
-  transition: all var(--transition-fast) ease-in-out;
+  transition: all 0.2s ease-in-out;
   display: flex;
   align-items: center;
-  gap: var(--spacing-2);
-  box-shadow: var(--shadow-sm);
+  gap: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .action-button-execute {
   background-color: var(--primary-color);
-  color: var(--text-on-primary);
+  color: white;
   border: none;
 }
 
@@ -293,7 +288,7 @@
 
 .action-button-export {
   background-color: var(--secondary-color);
-  color: var(--text-on-secondary);
+  color: white;
   border: none;
 }
 
@@ -303,99 +298,208 @@
 
 /* Node configuration panel */
 .node-config-panel {
-  background-color: var(--surface-color);
-  border-left: 1px solid var(--border-color);
-  box-shadow: var(--shadow-xl);
-  animation: slideInRight var(--transition-normal) ease-in-out;
+  background-color: #2d2d3a;
+  border-left: 1px solid #3f3f5c;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3);
+  animation: slideInRight 0.3s ease-in-out;
+  color: #e0e0e0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 280px;
+  height: 100%;
+  z-index: 10;
+  overflow-y: auto;
 }
 
 .node-config-header {
-  padding: var(--spacing-4);
-  border-bottom: 1px solid var(--border-color);
-  background-color: var(--surface-color);
+  padding: 12px;
+  border-bottom: 1px solid #3f3f5c;
+  background-color: #34344a;
   position: sticky;
   top: 0;
   z-index: 1;
 }
 
 .node-config-title {
-  font-size: var(--font-size-lg);
+  font-size: 16px;
   font-weight: 600;
-  margin-bottom: var(--spacing-1);
+  margin-bottom: 4px;
+  color: #e0e0e0;
 }
 
 .node-config-subtitle {
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
+  font-size: 12px;
+  color: #a0a0b0;
 }
 
 .node-config-content {
-  padding: var(--spacing-4);
+  padding: 12px;
 }
 
 .node-config-section {
-  margin-bottom: var(--spacing-6);
+  margin-bottom: 16px;
 }
 
 .node-config-section-title {
-  font-size: var(--font-size-md);
+  font-size: 14px;
   font-weight: 600;
-  margin-bottom: var(--spacing-3);
-  padding-bottom: var(--spacing-2);
-  border-bottom: 1px solid var(--border-color-light);
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #3f3f5c;
+  color: #e0e0e0;
 }
 
 .node-config-footer {
-  padding: var(--spacing-4);
-  border-top: 1px solid var(--border-color);
-  background-color: var(--surface-color);
+  padding: 12px;
+  border-top: 1px solid #3f3f5c;
+  background-color: #34344a;
   position: sticky;
   bottom: 0;
   display: flex;
   justify-content: flex-end;
-  gap: var(--spacing-3);
+  gap: 8px;
+}
+
+/* Form elements for dark theme */
+.form-control {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #e0e0e0;
+  background-color: #34344a;
+  border: 1px solid #3f3f5c;
+  border-radius: 4px;
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.form-control:focus {
+  border-color: var(--primary-light);
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.25);
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #a0a0b0;
+}
+
+.form-group {
+  margin-bottom: 12px;
+}
+
+/* Context menu for right-click */
+.context-menu {
+  position: fixed;
+  z-index: 1000;
+  background-color: #2d2d3a;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  border: 1px solid #3f3f5c;
+  min-width: 180px;
+  overflow: hidden;
+}
+
+.context-menu-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  color: #e0e0e0;
+  font-size: 13px;
+  transition: background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.context-menu-item:hover {
+  background-color: #34344a;
+}
+
+.context-menu-separator {
+  height: 1px;
+  background-color: #3f3f5c;
+  margin: 4px 0;
+}
+
+.context-menu-submenu {
+  position: relative;
+}
+
+.context-menu-submenu-content {
+  position: absolute;
+  left: 100%;
+  top: 0;
+  background-color: #2d2d3a;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  border: 1px solid #3f3f5c;
+  min-width: 180px;
+  display: none;
+}
+
+.context-menu-submenu:hover .context-menu-submenu-content {
+  display: block;
 }
 
 /* Execution panel */
 .execution-panel {
-  background-color: var(--surface-color);
-  border-left: 1px solid var(--border-color);
+  background-color: #2d2d3a;
+  border-left: 1px solid #3f3f5c;
+  color: #e0e0e0;
 }
 
-.execution-header {
-  padding: var(--spacing-4);
-  border-bottom: 1px solid var(--border-color);
+.execution-panel-header {
+  padding: 12px;
+  border-bottom: 1px solid #3f3f5c;
+  background-color: #34344a;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.execution-title {
-  font-size: var(--font-size-lg);
+.execution-panel-title {
+  font-size: 16px;
   font-weight: 600;
-  margin-bottom: var(--spacing-1);
+  color: #e0e0e0;
+  margin: 0;
 }
 
-.execution-content {
-  padding: var(--spacing-4);
+.execution-panel-content {
+  padding: 12px;
 }
 
-.execution-input {
-  margin-bottom: var(--spacing-6);
+.execution-panel-section {
+  margin-bottom: 16px;
+}
+
+.execution-panel-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #e0e0e0;
 }
 
 .execution-result {
-  background-color: var(--background-color);
-  border-radius: var(--radius-md);
-  padding: var(--spacing-4);
+  background-color: #34344a;
+  border-radius: 4px;
+  padding: 12px;
   overflow: auto;
   max-height: 500px;
-  border: 1px solid var(--border-color);
+  border: 1px solid #3f3f5c;
 }
 
 .execution-result pre {
   margin: 0;
   font-family: 'Fira Code', 'Courier New', monospace;
-  font-size: var(--font-size-sm);
+  font-size: 12px;
   white-space: pre-wrap;
   word-break: break-word;
+  color: #e0e0e0;
 }
 
 .execution-loading {
@@ -403,15 +507,15 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--spacing-8);
-  color: var(--text-secondary);
+  padding: 24px;
+  color: #a0a0b0;
 }
 
 .execution-spinner {
-  margin-bottom: var(--spacing-4);
-  width: 40px;
-  height: 40px;
-  border: 3px solid rgba(0, 0, 0, 0.1);
+  margin-bottom: 12px;
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
   border-radius: 50%;
   border-top-color: var(--primary-color);
   animation: spin 1s ease-in-out infinite;

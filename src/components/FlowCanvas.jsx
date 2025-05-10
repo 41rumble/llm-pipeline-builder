@@ -1,4 +1,4 @@
-import { useCallback, useState, useRef } from 'react';
+import { useCallback, useState, useRef, useEffect } from 'react';
 import ReactFlow, {
   ReactFlowProvider,
   addEdge,
@@ -7,7 +7,8 @@ import ReactFlow, {
   Controls,
   Background,
   ConnectionLineType,
-  Panel
+  Panel,
+  useReactFlow
 } from 'reactflow';
 import 'reactflow/dist/base.css';
 import 'reactflow/dist/style.css';
@@ -33,6 +34,10 @@ const FlowCanvas = ({ onExecute }) => {
   const [showNodePanel, setShowNodePanel] = useState(false);
   const reactFlowWrapper = useRef(null);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
+  
+  // Context menu states
+  const [contextMenu, setContextMenu] = useState(null);
+  const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
 
   // Handle node selection
   const onNodeClick = useCallback((event, node) => {
@@ -71,6 +76,70 @@ const FlowCanvas = ({ onExecute }) => {
     setShowNodePanel(false);
     setSelectedNode(null);
   }, []);
+
+  // Handle right-click context menu
+  const onContextMenu = useCallback(
+    (event) => {
+      event.preventDefault();
+      
+      if (!reactFlowWrapper.current || !reactFlowInstance) return;
+      
+      const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
+      const position = reactFlowInstance.project({
+        x: event.clientX - reactFlowBounds.left,
+        y: event.clientY - reactFlowBounds.top,
+      });
+      
+      setMenuPosition({ x: event.clientX, y: event.clientY });
+      setContextMenu({
+        position,
+        isOpen: true
+      });
+    },
+    [reactFlowInstance]
+  );
+  
+  // Close context menu when clicking elsewhere
+  useEffect(() => {
+    const handleClick = () => {
+      setContextMenu(null);
+    };
+    
+    document.addEventListener('click', handleClick);
+    return () => {
+      document.removeEventListener('click', handleClick);
+    };
+  }, []);
+  
+  // Create a new node from context menu
+  const createNodeFromContextMenu = useCallback(
+    (nodeType) => {
+      if (!contextMenu || !reactFlowInstance) return;
+      
+      // Get node definition from registry
+      const nodeDef = Object.values(nodeRegistry).find(def => def.type === nodeType);
+      if (!nodeDef) return;
+      
+      // Create initial node data based on node definition
+      const newNodeData = {
+        label: nodeDef.name,
+        type: nodeDef.type,
+        params: createDefaultParams(nodeDef),
+      };
+      
+      // Create the new node
+      const newNode = {
+        id: `${nodeType}-${uuidv4()}`,
+        type: 'default',
+        position: contextMenu.position,
+        data: newNodeData,
+      };
+      
+      setNodes((nds) => nds.concat(newNode));
+      setContextMenu(null);
+    },
+    [contextMenu, reactFlowInstance, setNodes]
+  );
 
   // Create a new node from the node palette
   const onDragOver = useCallback((event) => {
@@ -201,6 +270,7 @@ const FlowCanvas = ({ onExecute }) => {
             onInit={setReactFlowInstance}
             onDrop={onDrop}
             onDragOver={onDragOver}
+            onContextMenu={onContextMenu}
             nodeTypes={nodeTypes}
             fitView
             attributionPosition="bottom-right"
@@ -268,6 +338,43 @@ const FlowCanvas = ({ onExecute }) => {
             onUpdateNode={handleUpdateNode}
             onClose={handleClosePanel}
           />
+        )}
+        
+        {/* Context Menu */}
+        {contextMenu && contextMenu.isOpen && (
+          <div 
+            className="context-menu"
+            style={{
+              position: 'fixed',
+              top: menuPosition.y,
+              left: menuPosition.x,
+              zIndex: 1000
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="context-menu-item context-menu-header" style={{ fontWeight: 'bold', borderBottom: '1px solid #3f3f5c', pointerEvents: 'none' }}>
+              Add Node
+            </div>
+            {nodePaletteItems.map((item) => (
+              <div 
+                key={item.type}
+                className="context-menu-item"
+                onClick={() => createNodeFromContextMenu(item.type)}
+              >
+                <div style={{ 
+                  width: '8px', 
+                  height: '8px', 
+                  borderRadius: '50%', 
+                  backgroundColor: item.type === 'input' ? '#4285f4' : 
+                                  item.type === 'prompt' ? '#5e72e4' : 
+                                  item.type === 'llm' ? '#8b5cf6' : 
+                                  item.type === 'summarizer' ? '#a78bfa' : 
+                                  item.type === 'output' ? '#10b981' : '#a0a0b0'
+                }}></div>
+                {item.name}
+              </div>
+            ))}
+          </div>
         )}
       </ReactFlowProvider>
     </div>

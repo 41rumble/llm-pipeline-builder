@@ -38,17 +38,21 @@ function App() {
     <div className="app-container">
       <header className="app-header">
         <div className="app-logo">
-          <svg className="app-logo-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#3A86FF" />
-            <path d="M2 17L12 22L22 17" stroke="#3A86FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M2 12L12 17L22 12" stroke="#3A86FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          <svg className="app-logo-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#4285f4" />
+            <path d="M2 17L12 22L22 17" stroke="#4285f4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M2 12L12 17L22 12" stroke="#4285f4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           <span className="app-logo-text">LLM Pipeline Builder</span>
         </div>
         <div className="app-header-actions">
           <button 
             onClick={() => setShowExecutionPanel(!showExecutionPanel)}
-            className={`btn ${showExecutionPanel ? 'btn-outline' : 'btn-primary'}`}
+            className="action-button"
+            style={{ 
+              backgroundColor: showExecutionPanel ? '#34344a' : '#4285f4',
+              color: '#e0e0e0'
+            }}
           >
             {showExecutionPanel ? 'Hide Execution Panel' : 'Show Execution Panel'}
           </button>
@@ -65,8 +69,9 @@ function App() {
             <div className="execution-panel-header">
               <h2 className="execution-panel-title">Pipeline Execution</h2>
               <button 
-                className="execution-panel-close btn-ghost"
+                className="execution-panel-close"
                 onClick={() => setShowExecutionPanel(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#a0a0b0' }}
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -100,11 +105,21 @@ function App() {
                     }
                   }}
                   disabled={isExecuting}
-                  className={`btn ${isExecuting ? 'btn-outline' : 'btn-primary'}`}
+                  className="action-button action-button-execute"
+                  style={{ width: '100%', justifyContent: 'center' }}
                 >
                   {isExecuting ? (
                     <>
-                      <span className="execution-spinner-small"></span>
+                      <span className="execution-spinner-small" style={{ 
+                        display: 'inline-block',
+                        width: '14px',
+                        height: '14px',
+                        border: '2px solid rgba(255, 255, 255, 0.1)',
+                        borderRadius: '50%',
+                        borderTopColor: 'white',
+                        animation: 'spin 1s linear infinite',
+                        marginRight: '8px'
+                      }}></span>
                       Executing...
                     </>
                   ) : (
@@ -129,7 +144,7 @@ function App() {
                     </pre>
                   </div>
                 ) : (
-                  <div className="no-result">
+                  <div className="no-result" style={{ color: '#a0a0b0', textAlign: 'center', padding: '20px' }}>
                     <p>No results yet. Execute the pipeline to see results.</p>
                   </div>
                 )}
@@ -139,9 +154,23 @@ function App() {
         )}
       </div>
       
-      <div className="status-bar">
-        <div className="status-item">
-          <div className={`status-indicator ${isExecuting ? 'status-indicator-warning' : 'status-indicator-success'}`}></div>
+      <div className="status-bar" style={{ 
+        height: '24px', 
+        backgroundColor: '#2d2d3a', 
+        borderTop: '1px solid #3f3f5c',
+        display: 'flex',
+        alignItems: 'center',
+        padding: '0 16px',
+        fontSize: '12px',
+        color: '#a0a0b0'
+      }}>
+        <div className="status-item" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div style={{ 
+            width: '8px', 
+            height: '8px', 
+            borderRadius: '50%',
+            backgroundColor: isExecuting ? '#f59e0b' : '#10b981'
+          }}></div>
           <span>{isExecuting ? 'Executing pipeline...' : 'Ready'}</span>
         </div>
       </div>

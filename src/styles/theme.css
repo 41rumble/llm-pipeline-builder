@@ -1,8 +1,8 @@
 :root {
-  /* Color palette - Modern, professional colors */
-  --primary-color: #3a86ff;
-  --primary-light: #61a0ff;
-  --primary-dark: #2563eb;
+  /* Color palette - Simplified, ComfyUI-like colors */
+  --primary-color: #4285f4;
+  --primary-light: #5a9cff;
+  --primary-dark: #2b6cb0;
   --secondary-color: #10b981;
   --secondary-light: #34d399;
   --secondary-dark: #059669;
