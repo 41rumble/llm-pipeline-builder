@@ -15,6 +15,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import BaseNode from './nodes/BaseNode';
 import NodeConfigPanel from './NodeConfigPanel';
+import NodeTypeDebugger from './NodeTypeDebugger';
 import nodeRegistry, { getAllNodeDefs } from '../utils/nodeRegistry';
 import { exportToJSON } from '../utils/exportUtils';
 
@@ -41,6 +42,34 @@ const FlowCanvas = ({ onExecute }) => {
   useEffect(() => {
     window.executingNodeId = executingNodeId;
   }, [executingNodeId]);
+  
+  // Add a listener to fix node types when they change unexpectedly
+  useEffect(() => {
+    const handleFixNodeType = (event) => {
+      const { nodeId, correctType } = event.detail;
+      console.log(`Fixing node ${nodeId} type to ${correctType}`);
+      
+      setNodes((nds) => 
+        nds.map((node) => {
+          if (node.id === nodeId && node.data.type !== correctType) {
+            // Create a deep copy of the node data
+            const fixedData = JSON.parse(JSON.stringify(node.data));
+            // Fix the type
+            fixedData.type = correctType;
+            
+            return {
+              ...node,
+              data: fixedData
+            };
+          }
+          return node;
+        })
+      );
+    };
+    
+    window.addEventListener('fixNodeType', handleFixNodeType);
+    return () => window.removeEventListener('fixNodeType', handleFixNodeType);
+  }, [setNodes]);
   
   // Context menu states
   const [contextMenu, setContextMenu] = useState(null);
@@ -106,22 +135,34 @@ const FlowCanvas = ({ onExecute }) => {
   const handleUpdateNode = useCallback((updatedData) => {
     if (!selectedNode) return;
     
+    // Store the original node type for reference
+    const originalNodeType = selectedNode.data.type;
+    const originalNodeLabel = selectedNode.data.label;
+    
+    console.log('Updating node:', selectedNode.id, 'Original type:', originalNodeType);
+    
     setNodes((nds) => 
       nds.map((node) => {
         if (node.id === selectedNode.id) {
-          // Preserve the node type and other critical properties
-          const preservedData = {
-            ...updatedData,
-            type: node.data.type, // Ensure type is preserved
-            label: node.data.label, // Preserve the label
-          };
+          // Create a deep copy of the updated data to avoid reference issues
+          const preservedData = JSON.parse(JSON.stringify(updatedData));
           
-          console.log('Updating node:', node.id, 'Original type:', node.data.type, 'Updated data:', preservedData);
+          // Explicitly preserve critical properties
+          preservedData.type = originalNodeType;
+          preservedData.label = originalNodeLabel;
+          
+          // Log the update for debugging
+          console.log('Node update:', {
+            id: node.id,
+            originalType: originalNodeType,
+            newType: preservedData.type,
+            params: preservedData.params
+          });
           
           return {
             ...node,
             data: preservedData,
-            type: node.type, // Ensure React Flow node type is preserved
+            type: node.type // Ensure React Flow node type is preserved
           };
         }
         return node;
@@ -332,6 +373,7 @@ const FlowCanvas = ({ onExecute }) => {
           >
             <Controls showFitView={true} />
             <Background variant="dots" gap={12} size={1} />
+            <NodeTypeDebugger />
             
             {/* Node Palette */}
             <Panel position="top-left">
