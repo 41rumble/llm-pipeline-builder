@@ -115,6 +115,7 @@ const FlowCanvas = ({ onExecute }) => {
 
   // Close the node configuration panel
   const handleClosePanel = useCallback(() => {
+    // The panel will auto-save changes when it unmounts
     setShowNodePanel(false);
     setSelectedNode(null);
   }, []);

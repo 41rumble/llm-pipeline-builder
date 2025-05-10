@@ -1,16 +1,39 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import nodeRegistry from '../utils/nodeRegistry';
 
 const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
   const [nodeData, setNodeData] = useState(null);
+  const previousNodeIdRef = useRef(null);
 
   useEffect(() => {
+    // If we had a previous node and we're switching to a new one, save the changes
+    if (previousNodeIdRef.current && 
+        selectedNode && 
+        previousNodeIdRef.current !== selectedNode.id && 
+        nodeData) {
+      // Save changes to the previous node
+      onUpdateNode(nodeData);
+    }
+    
+    // Update the reference to the current node
+    previousNodeIdRef.current = selectedNode ? selectedNode.id : null;
+    
+    // Set the new node data
     if (selectedNode) {
       setNodeData({ ...selectedNode });
     } else {
       setNodeData(null);
     }
-  }, [selectedNode]);
+  }, [selectedNode, onUpdateNode]);
+
+  // Auto-save when component unmounts
+  useEffect(() => {
+    return () => {
+      if (nodeData) {
+        onUpdateNode(nodeData);
+      }
+    };
+  }, [nodeData, onUpdateNode]);
 
   if (!nodeData) {
     return null;
