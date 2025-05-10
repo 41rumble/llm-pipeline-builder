@@ -1,4 +1,4 @@
-import { NodeData } from './NodeTypes';
+import type { NodeData } from './NodeTypes';
 
 // Define our own NodeProps type since it's not directly exported from reactflow
 export interface NodeProps<T = any> {

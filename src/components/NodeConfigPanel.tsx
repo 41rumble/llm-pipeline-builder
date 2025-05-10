@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { NodeData } from './NodeTypes';
+import type { NodeData } from './NodeTypes';
 import nodeRegistry from '../utils/nodeRegistry';
 
 interface NodeConfigPanelProps {

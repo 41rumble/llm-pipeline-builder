@@ -21,7 +21,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import BaseNode from './nodes/BaseNode';
 import NodeConfigPanel from './NodeConfigPanel';
-import { NodeData } from './NodeTypes';
+import type { NodeData } from './NodeTypes';
 import nodeRegistry, { NodeDefinition, getAllNodeDefs } from '../utils/nodeRegistry';
 import { exportToJSON, Pipeline } from '../utils/exportUtils';
 
