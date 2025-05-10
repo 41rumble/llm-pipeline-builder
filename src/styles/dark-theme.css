@@ -674,6 +674,34 @@ body {
   animation: slideInRight 0.3s ease-in-out;
 }
 
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.execution-spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid rgba(160, 160, 176, 0.2);
+  border-radius: 50%;
+  border-top-color: #a0a0b0;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 15px;
+}
+
+.execution-spinner-small {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(160, 160, 176, 0.2);
+  border-radius: 50%;
+  border-top-color: #a0a0b0;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
 /* Utilities */
 .flex {
   display: flex;

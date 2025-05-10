@@ -110,26 +110,27 @@ function App() {
               <div className="execution-panel-section">
                 <h3 className="execution-panel-section-title">Result</h3>
                 {isExecuting ? (
-                  <div style={{ textAlign: 'center', padding: '20px', color: '#6b7280' }}>
+                  <div style={{ textAlign: 'center', padding: '20px', color: '#a0a0b0' }}>
+                    <div className="execution-spinner"></div>
                     Executing pipeline...
                   </div>
                 ) : executionResult ? (
                   <div style={{ 
-                    background: '#f5f5f5', 
+                    background: '#34344a', 
                     padding: '15px', 
                     borderRadius: '4px',
                     overflow: 'auto',
                     maxHeight: '500px',
-                    border: '1px solid #e5e7eb'
+                    border: '1px solid #3f3f5c'
                   }}>
-                    <pre style={{ margin: 0, fontFamily: 'monospace' }}>
+                    <pre style={{ margin: 0, fontFamily: 'monospace', color: '#e0e0e0' }}>
                       {typeof executionResult === 'object' 
                         ? JSON.stringify(executionResult, null, 2) 
                         : executionResult}
                     </pre>
                   </div>
                 ) : (
-                  <div style={{ textAlign: 'center', padding: '20px', color: '#6b7280' }}>
+                  <div style={{ textAlign: 'center', padding: '20px', color: '#a0a0b0' }}>
                     No results yet. Execute the pipeline to see results.
                   </div>
                 )}
