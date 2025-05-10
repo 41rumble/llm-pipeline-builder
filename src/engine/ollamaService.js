@@ -26,10 +26,15 @@ export const generateText = async (model, prompt, options = {}) => {
   console.log(`[Ollama] Calling ${model} with prompt: ${prompt.substring(0, 50)}...`);
   
   try {
-    // Prepare the request to the Ollama API
-    const ollamaRequest = {
-      model: model || "llama3",
-      prompt: prompt,
+    // Prepare the request to the Ollama API for the chat endpoint
+    const chatRequest = {
+      model: model || "phi:latest", // Use a smaller model by default
+      messages: [
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
       stream: false,
       options: {
         temperature: options.temperature || 0.7,
@@ -37,16 +42,16 @@ export const generateText = async (model, prompt, options = {}) => {
       }
     };
     
-    console.log(`Connecting to Ollama at ${OLLAMA_SERVER_URL}/api/generate`);
+    console.log(`Connecting to Ollama at ${OLLAMA_SERVER_URL}/api/chat`);
     
-    // Make the API call to the Ollama generate endpoint
-    const response = await fetch(`${OLLAMA_SERVER_URL}/api/generate`, {
+    // Make the API call to the Ollama chat endpoint
+    const response = await fetch(`${OLLAMA_SERVER_URL}/api/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
-      body: JSON.stringify(ollamaRequest),
+      body: JSON.stringify(chatRequest),
       mode: 'cors' // Try with CORS mode
     });
     
@@ -56,9 +61,23 @@ export const generateText = async (model, prompt, options = {}) => {
     
     const data = await response.json();
     
+    // Extract the response from the chat API format
+    let responseText = "";
+    if (data.message && data.message.content) {
+      // Chat API format
+      responseText = data.message.content;
+    } else if (data.response) {
+      // Generate API format (fallback)
+      responseText = data.response;
+    } else {
+      // Unknown format
+      console.warn("Unexpected response format from Ollama:", data);
+      responseText = JSON.stringify(data);
+    }
+    
     return {
-      text: data.response || "",
-      model: model || "llama3"
+      text: responseText,
+      model: model
     };
   } catch (error) {
     console.error("Error in Ollama service:", error);
