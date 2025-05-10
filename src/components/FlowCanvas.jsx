@@ -48,6 +48,7 @@ const FlowCanvas = ({ onExecute }) => {
 
   // Handle node selection
   const onNodeClick = useCallback((event, node) => {
+    console.log('Node selected:', node.id, 'Type:', node.data.type);
     setSelectedNode(node);
     setShowNodePanel(true);
   }, []);
@@ -108,9 +109,19 @@ const FlowCanvas = ({ onExecute }) => {
     setNodes((nds) => 
       nds.map((node) => {
         if (node.id === selectedNode.id) {
+          // Preserve the node type and other critical properties
+          const preservedData = {
+            ...updatedData,
+            type: node.data.type, // Ensure type is preserved
+            label: node.data.label, // Preserve the label
+          };
+          
+          console.log('Updating node:', node.id, 'Original type:', node.data.type, 'Updated data:', preservedData);
+          
           return {
             ...node,
-            data: updatedData,
+            data: preservedData,
+            type: node.type, // Ensure React Flow node type is preserved
           };
         }
         return node;

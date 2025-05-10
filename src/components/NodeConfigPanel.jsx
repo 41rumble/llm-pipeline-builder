@@ -59,13 +59,21 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
     setNodeData(prev => {
       if (!prev) return null;
       
-      return {
+      // Create a copy of the previous state
+      const updated = {
         ...prev,
         params: {
           ...prev.params,
           [key]: value
         }
       };
+      
+      // Ensure we preserve the node type
+      if (prev.type) {
+        updated.type = prev.type;
+      }
+      
+      return updated;
     });
   };
 
@@ -73,7 +81,8 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
     setNodeData(prev => {
       if (!prev) return null;
       
-      return {
+      // Create a copy of the previous state
+      const updated = {
         ...prev,
         params: {
           ...prev.params,
@@ -83,6 +92,13 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
           }
         }
       };
+      
+      // Ensure we preserve the node type
+      if (prev.type) {
+        updated.type = prev.type;
+      }
+      
+      return updated;
     });
   };
 
