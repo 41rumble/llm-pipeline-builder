@@ -3,8 +3,8 @@
   "type": "llm",
   "input": ["text"],
   "output": ["text"],
-  "llm": {
-    "model": "gpt-4",
+  "params": {
+    "model": "phi:latest",
     "temperature": 0.7,
     "max_tokens": 1000
   },

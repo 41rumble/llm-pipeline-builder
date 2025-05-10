@@ -5,7 +5,7 @@
   "output": ["text"],
   "template": "Given the following information, provide a concise summary:\n\n{{text}}",
   "llm": {
-    "model": "gpt-4",
+    "model": "phi:latest",
     "temperature": 0.3,
     "max_tokens": 500
   },

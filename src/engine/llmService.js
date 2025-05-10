@@ -1,61 +1,42 @@
 /**
  * Service for making LLM API calls
- * This is a mock implementation that would be replaced with actual API calls
+ * This implementation connects to real LLM services
  */
 
-// Mock implementation of OpenAI API call
+import * as ollamaService from './ollamaService';
+
+// OpenAI API call implementation
 export const callOpenAI = async (request) => {
   console.log(`[OpenAI] Calling ${request.model} with prompt: ${request.prompt.substring(0, 50)}...`);
   
-  // In a real implementation, this would make an API call to OpenAI
-  // For now, we'll simulate a response with a delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  // Mock response based on the prompt
-  let responseText = '';
-  
-  if (request.prompt.includes('questions')) {
-    // If asking for questions, return a JSON array
-    responseText = JSON.stringify([
-      "What is the main goal of the project?",
-      "What technologies are being used?",
-      "What are the key challenges?",
-      "What is the timeline for completion?",
-      "How will success be measured?"
-    ]);
-  } else if (request.prompt.includes('summary') || request.prompt.includes('summarize')) {
-    // If asking for a summary
-    responseText = "This project aims to create a flexible LLM pipeline system with a visual editor and execution engine. It uses React Flow for the UI and supports various node types for different operations.";
-  } else {
-    // Generic response
-    responseText = "I've processed your request and generated a response based on the provided input.";
+  try {
+    // For now, we'll redirect to Ollama since we don't have OpenAI API access
+    console.log("Redirecting OpenAI request to local Ollama instance");
+    return await callOllama({
+      ...request,
+      model: "llama3" // Default to llama3 when OpenAI is requested
+    });
+  } catch (error) {
+    console.error("Error calling OpenAI (redirected to Ollama):", error);
+    throw error;
   }
-  
-  return {
-    text: responseText,
-    model: request.model,
-    usage: {
-      prompt_tokens: request.prompt.length / 4,
-      completion_tokens: responseText.length / 4,
-      total_tokens: (request.prompt.length + responseText.length) / 4
-    }
-  };
 };
 
-// Mock implementation of Ollama API call
+// Implementation of Ollama API call
 export const callOllama = async (request) => {
-  console.log(`[Ollama] Calling ${request.model} with prompt: ${request.prompt.substring(0, 50)}...`);
-  
-  // In a real implementation, this would make an API call to Ollama
-  await new Promise(resolve => setTimeout(resolve, 800));
-  
-  // Mock response
-  const responseText = "Response from local Ollama model: " + request.prompt.substring(0, 20) + "...";
-  
-  return {
-    text: responseText,
-    model: request.model
-  };
+  return await ollamaService.generateText(
+    request.model || "llama3",
+    request.prompt,
+    {
+      temperature: request.temperature || 0.7,
+      max_tokens: request.max_tokens || 1000
+    }
+  );
+};
+
+// Get available models from Ollama
+export const getOllamaModels = async () => {
+  return await ollamaService.getModels();
 };
 
 // Unified LLM service that routes to the appropriate implementation

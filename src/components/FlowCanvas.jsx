@@ -8,7 +8,7 @@ import ReactFlow, {
   Background,
   ConnectionLineType,
   Panel,
-  useReactFlow
+  MiniMap
 } from 'reactflow';
 import 'reactflow/dist/base.css';
 import 'reactflow/dist/style.css';
@@ -16,6 +16,8 @@ import { v4 as uuidv4 } from 'uuid';
 
 import BaseNode from './nodes/BaseNode';
 import NodeConfigPanel from './NodeConfigPanel';
+import NodeTypeDebugger from './NodeTypeDebugger';
+import NavigationHUD from './NavigationHUD';
 import nodeRegistry, { getAllNodeDefs } from '../utils/nodeRegistry';
 import { exportToJSON } from '../utils/exportUtils';
 
@@ -35,14 +37,59 @@ const FlowCanvas = ({ onExecute }) => {
   const reactFlowWrapper = useRef(null);
   const [reactFlowInstance, setReactFlowInstance] = useState(null);
   
+  // Execution states
+  const [executingNodeId, setExecutingNodeId] = useState(null);
+  
+  // Make executingNodeId available globally for node highlighting
+  useEffect(() => {
+    window.executingNodeId = executingNodeId;
+  }, [executingNodeId]);
+  
+  // Add a listener to fix node types when they change unexpectedly
+  useEffect(() => {
+    const handleFixNodeType = (event) => {
+      const { nodeId, correctType } = event.detail;
+      console.log(`Fixing node ${nodeId} type to ${correctType}`);
+      
+      setNodes((nds) => 
+        nds.map((node) => {
+          if (node.id === nodeId && node.data.type !== correctType) {
+            // Create a deep copy of the node data
+            const fixedData = JSON.parse(JSON.stringify(node.data));
+            // Fix the type
+            fixedData.type = correctType;
+            
+            return {
+              ...node,
+              data: fixedData
+            };
+          }
+          return node;
+        })
+      );
+    };
+    
+    window.addEventListener('fixNodeType', handleFixNodeType);
+    return () => window.removeEventListener('fixNodeType', handleFixNodeType);
+  }, [setNodes]);
+  
   // Context menu states
   const [contextMenu, setContextMenu] = useState(null);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
 
   // Handle node selection
   const onNodeClick = useCallback((event, node) => {
+    console.log('Raw node selected:', node.id, 'Type:', node.data?.type);
+    
+    // Don't create a deep copy, just use the node directly
     setSelectedNode(node);
     setShowNodePanel(true);
+  }, []);
+  
+  // Handle background click to deselect nodes
+  const onPaneClick = useCallback(() => {
+    setSelectedNode(null);
+    setShowNodePanel(false);
   }, []);
 
   // Handle edge connections
@@ -53,30 +100,7 @@ const FlowCanvas = ({ onExecute }) => {
       animated: true,
     }, eds));
   }, [setEdges]);
-
-  // Update node data when configuration changes
-  const handleUpdateNode = useCallback((updatedData) => {
-    if (!selectedNode) return;
-    
-    setNodes((nds) => 
-      nds.map((node) => {
-        if (node.id === selectedNode.id) {
-          return {
-            ...node,
-            data: updatedData,
-          };
-        }
-        return node;
-      })
-    );
-  }, [selectedNode, setNodes]);
-
-  // Close the node configuration panel
-  const handleClosePanel = useCallback(() => {
-    setShowNodePanel(false);
-    setSelectedNode(null);
-  }, []);
-
+  
   // Handle right-click context menu
   const onContextMenu = useCallback(
     (event) => {
@@ -84,10 +108,10 @@ const FlowCanvas = ({ onExecute }) => {
       
       if (!reactFlowWrapper.current || !reactFlowInstance) return;
       
-      // Use the newer API to convert screen to flow position
-      const position = reactFlowInstance.screenToFlowPosition({
-        x: event.clientX,
-        y: event.clientY,
+      const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
+      const position = reactFlowInstance.project({
+        x: event.clientX - reactFlowBounds.left,
+        y: event.clientY - reactFlowBounds.top,
       });
       
       setMenuPosition({ x: event.clientX, y: event.clientY });
@@ -110,50 +134,45 @@ const FlowCanvas = ({ onExecute }) => {
       document.removeEventListener('click', handleClick);
     };
   }, []);
-  
-  // Add keyboard shortcuts for panning
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      if (!reactFlowInstance) return;
-      
-      const panAmount = 100;
-      const currentViewport = reactFlowInstance.getViewport();
-      
-      switch (event.key) {
-        case 'ArrowUp':
-          reactFlowInstance.setViewport({ 
-            ...currentViewport, 
-            y: currentViewport.y + panAmount 
-          });
-          break;
-        case 'ArrowDown':
-          reactFlowInstance.setViewport({ 
-            ...currentViewport, 
-            y: currentViewport.y - panAmount 
-          });
-          break;
-        case 'ArrowLeft':
-          reactFlowInstance.setViewport({ 
-            ...currentViewport, 
-            x: currentViewport.x + panAmount 
-          });
-          break;
-        case 'ArrowRight':
-          reactFlowInstance.setViewport({ 
-            ...currentViewport, 
-            x: currentViewport.x - panAmount 
-          });
-          break;
-        default:
-          break;
-      }
+
+  // Update node data when configuration changes
+  const handleUpdateNode = useCallback((updatedData) => {
+    if (!selectedNode) return;
+    
+    console.log('Updating node:', selectedNode.id, 'Type:', updatedData.type || selectedNode.data.type);
+    
+    // Store the update for debugging
+    window._lastNodeUpdate = {
+      selectedNode,
+      updatedData
     };
     
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [reactFlowInstance]);
+    setNodes((nds) => 
+      nds.map((node) => {
+        if (node.id === selectedNode.id) {
+          // Create a new data object that preserves the node type
+          const newData = {
+            ...updatedData,
+            type: selectedNode.data.type,
+            label: selectedNode.data.label
+          };
+          
+          return {
+            ...node,
+            data: newData
+          };
+        }
+        return node;
+      })
+    );
+  }, [selectedNode, setNodes]);
+
+  // Close the node configuration panel
+  const handleClosePanel = useCallback(() => {
+    // The panel will auto-save changes when it unmounts
+    setShowNodePanel(false);
+    setSelectedNode(null);
+  }, []);
   
   // Create a new node from context menu
   const createNodeFromContextMenu = useCallback(
@@ -171,22 +190,19 @@ const FlowCanvas = ({ onExecute }) => {
         params: createDefaultParams(nodeDef),
       };
       
-      // Create the new node with a good position
+      // Create the new node
       const newNode = {
         id: `${nodeType}-${uuidv4()}`,
         type: 'default',
-        position: getNewNodePosition(),
+        position: contextMenu.position,
         data: newNodeData,
       };
       
       // Add the new node
-      const newNodes = [...nodes, newNode];
-      setNodes(newNodes);
+      setNodes((nds) => nds.concat(newNode));
       setContextMenu(null);
-      
-      // Don't adjust the viewport - keep the view stable
     },
-    [contextMenu, reactFlowInstance, setNodes, nodes]
+    [contextMenu, reactFlowInstance, setNodes]
   );
 
   // Create a new node from the node palette
@@ -201,16 +217,17 @@ const FlowCanvas = ({ onExecute }) => {
 
       if (!reactFlowWrapper.current || !reactFlowInstance) return;
 
+      const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
       const nodeType = event.dataTransfer.getData('application/reactflow/type');
       
       // Get node definition from registry
       const nodeDef = Object.values(nodeRegistry).find(def => def.type === nodeType);
       if (!nodeDef) return;
 
-      // Get position where node was dropped using the newer API
-      const position = reactFlowInstance.screenToFlowPosition({
-        x: event.clientX,
-        y: event.clientY,
+      // Get position where node was dropped
+      const position = reactFlowInstance.project({
+        x: event.clientX - reactFlowBounds.left,
+        y: event.clientY - reactFlowBounds.top,
       });
 
       // Create initial node data based on node definition
@@ -220,45 +237,18 @@ const FlowCanvas = ({ onExecute }) => {
         params: createDefaultParams(nodeDef),
       };
 
-      // Create the new node with a good position
+      // Create the new node
       const newNode = {
         id: `${nodeType}-${uuidv4()}`,
         type: 'default',
-        position: getNewNodePosition(),
+        position,
         data: newNodeData,
       };
 
-      // Add the new node
-      const newNodes = [...nodes, newNode];
-      setNodes(newNodes);
-      
-      // Don't adjust the viewport - keep the view stable
+      setNodes((nds) => nds.concat(newNode));
     },
-    [reactFlowInstance, setNodes, nodes]
+    [reactFlowInstance, setNodes]
   );
-
-  // Helper to calculate a good position for a new node
-  const getNewNodePosition = () => {
-    // If there are no nodes, start in the center
-    if (nodes.length === 0) {
-      return { x: 250, y: 100 };
-    }
-    
-    // Find the rightmost node
-    let maxX = 0;
-    let avgY = 0;
-    
-    nodes.forEach(node => {
-      maxX = Math.max(maxX, node.position.x);
-      avgY += node.position.y;
-    });
-    
-    // Calculate average Y position
-    avgY = avgY / nodes.length;
-    
-    // Place new node to the right of existing nodes
-    return { x: maxX + 300, y: avgY };
-  };
 
   // Helper to create default parameters for a new node
   const createDefaultParams = (nodeDef) => {
@@ -313,13 +303,41 @@ const FlowCanvas = ({ onExecute }) => {
   };
   
   // Execute the current flow
-  const handleExecuteFlow = () => {
+  const handleExecuteFlow = async () => {
     if (onExecute && reactFlowInstance) {
+      // Clear any previous executing node highlight
+      setExecutingNodeId(null);
+      
       const pipeline = exportToJSON(
         reactFlowInstance.getNodes(),
         reactFlowInstance.getEdges()
       );
-      onExecute(pipeline);
+      
+      // Create a modified version of onExecute that tracks node execution
+      const executeWithTracking = async (pipelineData) => {
+        try {
+          // Set up a listener for node execution events
+          window.addEventListener('nodeExecution', (event) => {
+            if (event.detail && event.detail.nodeId) {
+              setExecutingNodeId(event.detail.nodeId);
+            }
+          }, { once: false });
+          
+          // Execute the pipeline
+          const result = await onExecute(pipelineData);
+          
+          // Clear executing node highlight when done
+          setExecutingNodeId(null);
+          
+          return result;
+        } catch (error) {
+          // Clear executing node highlight on error
+          setExecutingNodeId(null);
+          throw error;
+        }
+      };
+      
+      return executeWithTracking(pipeline);
     }
   };
 
@@ -330,14 +348,10 @@ const FlowCanvas = ({ onExecute }) => {
     description: nodeDef.description
   }));
 
-  // We'll let React Flow handle mouse wheel interactions directly
-
   return (
-    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+    <div style={{ width: '100%', height: '100vh', position: 'relative' }}>
       <ReactFlowProvider>
-        <div 
-          ref={reactFlowWrapper} 
-          style={{ width: '100%', height: '100%', display: 'flex', flex: 1 }}>
+        <div ref={reactFlowWrapper} style={{ width: '100%', height: '100%' }}>
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -349,26 +363,35 @@ const FlowCanvas = ({ onExecute }) => {
             onDrop={onDrop}
             onDragOver={onDragOver}
             onContextMenu={onContextMenu}
+            onPaneClick={onPaneClick}
             nodeTypes={nodeTypes}
             defaultViewport={{ x: 0, y: 0, zoom: 1 }}
-            minZoom={0.1}
-            maxZoom={4}
-            zoomOnScroll={true}
-            zoomOnPinch={true}
-            panOnScroll={true}
-            panOnScrollMode="free"
-            panOnDrag={true}
-            onlyRenderVisibleElements={false}
             attributionPosition="bottom-right"
           >
             <Controls showFitView={true} />
             <Background variant="dots" gap={12} size={1} />
+            <MiniMap 
+              nodeStrokeColor="#3f3f5c"
+              nodeColor="#2a2a3c"
+              nodeBorderRadius={2}
+              maskColor="rgba(30, 30, 46, 0.5)"
+              style={{ 
+                position: 'absolute', 
+                bottom: 10, 
+                right: 10,
+                backgroundColor: '#1e1e2e',
+                border: '1px solid #3f3f5c',
+                borderRadius: '4px'
+              }}
+            />
+            <NavigationHUD />
+            <NodeTypeDebugger />
             
             {/* Node Palette */}
             <Panel position="top-left">
               <div className="node-palette">
                 <div className="node-palette-header">
-                  <h3>Node Palette</h3>
+                  <h3 className="node-palette-title">Node Palette</h3>
                 </div>
                 <div className="node-palette-content">
                   {nodePaletteItems.map((item) => (
@@ -391,9 +414,9 @@ const FlowCanvas = ({ onExecute }) => {
             
             {/* Action Buttons */}
             <Panel position="top-right">
-              <div className="action-buttons">
+              <div className="flex gap-2">
                 <button
-                  className="action-button action-button-execute execute-pipeline-button"
+                  className="btn btn-primary execute-pipeline-button"
                   onClick={handleExecuteFlow}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -402,7 +425,7 @@ const FlowCanvas = ({ onExecute }) => {
                   Execute Pipeline
                 </button>
                 <button
-                  className="action-button action-button-export"
+                  className="btn btn-success"
                   onClick={handleExportFlow}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -412,36 +435,22 @@ const FlowCanvas = ({ onExecute }) => {
                   </svg>
                   Export Pipeline
                 </button>
-                <button
-                  className="action-button"
-                  style={{ backgroundColor: '#34344a' }}
-                  onClick={() => {
-                    if (reactFlowInstance) {
-                      reactFlowInstance.fitView({ padding: 0.2 });
-                    }
-                  }}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2" />
-                    <path d="M9 3V9H3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M15 3V9H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M9 21V15H3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M15 21V15H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  Fit View
-                </button>
               </div>
             </Panel>
           </ReactFlow>
         </div>
         
         {/* Node Configuration Panel */}
+        {console.log('Panel state:', { showNodePanel, selectedNode })}
         {showNodePanel && selectedNode && (
-          <NodeConfigPanel
-            selectedNode={selectedNode.data}
-            onUpdateNode={handleUpdateNode}
-            onClose={handleClosePanel}
-          />
+          <div className="panel-container">
+            <div className="panel-overlay" onClick={handleClosePanel}></div>
+            <NodeConfigPanel
+              selectedNode={selectedNode.data}
+              onUpdateNode={handleUpdateNode}
+              onClose={handleClosePanel}
+            />
+          </div>
         )}
         
         {/* Context Menu */}
@@ -449,14 +458,12 @@ const FlowCanvas = ({ onExecute }) => {
           <div 
             className="context-menu"
             style={{
-              position: 'fixed',
               top: menuPosition.y,
-              left: menuPosition.x,
-              zIndex: 1000
+              left: menuPosition.x
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="context-menu-item context-menu-header" style={{ fontWeight: 'bold', borderBottom: '1px solid #3f3f5c', pointerEvents: 'none' }}>
+            <div className="context-menu-header">
               Add Node
             </div>
             {nodePaletteItems.map((item) => (
@@ -465,16 +472,16 @@ const FlowCanvas = ({ onExecute }) => {
                 className="context-menu-item"
                 onClick={() => createNodeFromContextMenu(item.type)}
               >
-                <div style={{ 
-                  width: '8px', 
-                  height: '8px', 
-                  borderRadius: '50%', 
-                  backgroundColor: item.type === 'input' ? '#4285f4' : 
-                                  item.type === 'prompt' ? '#5e72e4' : 
-                                  item.type === 'llm' ? '#8b5cf6' : 
-                                  item.type === 'summarizer' ? '#a78bfa' : 
-                                  item.type === 'output' ? '#10b981' : '#a0a0b0'
-                }}></div>
+                <div 
+                  className="context-menu-item-indicator"
+                  style={{ 
+                    backgroundColor: item.type === 'input' ? '#3b82f6' : 
+                                    item.type === 'prompt' ? '#6366f1' : 
+                                    item.type === 'llm' ? '#8b5cf6' : 
+                                    item.type === 'summarizer' ? '#a78bfa' : 
+                                    item.type === 'output' ? '#10b981' : '#64748b'
+                  }}
+                ></div>
                 {item.name}
               </div>
             ))}

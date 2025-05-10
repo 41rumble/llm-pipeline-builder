@@ -5,7 +5,7 @@
   "output": ["text_list"],
   "template": "Break this into 5 questions:\n\n{{query}}",
   "llm": {
-    "model": "gpt-4",
+    "model": "phi:latest",
     "format": "json_array"
   },
   "parser": "json_array",

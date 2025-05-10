@@ -1,5 +1,6 @@
 import { topologicalSort } from './topologicalSort';
 import { callLLM } from './llmService';
+import { parseResponseForFanOut } from './responseParser';
 import Handlebars from 'handlebars';
 
 /**
@@ -44,6 +45,9 @@ export class PipelineExecutor {
     this.queue = [];
     this.fanOutTracking = {};
     
+    // Initialize global executing node ID
+    window.executingNodeId = null;
+    
     // Find input nodes (nodes with no incoming edges)
     const inputNodes = this.executionOrder.filter(node => 
       !this.pipeline.edges.some(edge => edge.target === node.id)
@@ -71,6 +75,9 @@ export class PipelineExecutor {
       !this.pipeline.edges.some(edge => edge.source === node.id)
     );
     
+    // Clear the executing node ID
+    window.executingNodeId = null;
+    
     // Return results from output nodes
     if (outputNodes.length === 1) {
       return this.results[outputNodes[0].id];
@@ -92,6 +99,12 @@ export class PipelineExecutor {
     }
     
     console.log(`Executing node: ${node.type} (${nodeId})`);
+    
+    // Emit an event to notify that this node is being executed
+    this.emitNodeExecutionEvent(nodeId);
+    
+    // Set the global executing node ID for UI highlighting
+    window.executingNodeId = nodeId;
     
     let result;
     
@@ -226,14 +239,13 @@ export class PipelineExecutor {
         format: node.params.llm.format
       });
       
-      // Parse the response if needed
-      if (node.params.parser === 'json_array' && node.params.fanOut) {
-        try {
-          return JSON.parse(response.text);
-        } catch (error) {
-          console.error('Failed to parse JSON array response:', error);
-          return [response.text]; // Fallback to single item array
-        }
+      // Parse the response if needed for fan-out
+      if (node.params.fanOut) {
+        // Use our enhanced response parser
+        return parseResponseForFanOut(
+          response.text, 
+          node.params.parser || 'auto'
+        );
       }
       
       return response.text;
@@ -247,21 +259,36 @@ export class PipelineExecutor {
    * Execute an LLM node
    */
   async executeLLMNode(node, context) {
-    // Call the LLM with the input as the prompt
-    const response = await callLLM({
-      model: node.params.model,
-      prompt: context.currentInput,
-      temperature: node.params.temperature,
-      max_tokens: node.params.max_tokens
-    });
+    console.log(`Executing LLM node with model: ${node.params.model}`);
     
-    return response.text;
+    // Make sure we have a valid input
+    const inputText = typeof context.currentInput === 'string' 
+      ? context.currentInput 
+      : JSON.stringify(context.currentInput);
+    
+    // Call the LLM with the input as the prompt
+    try {
+      const response = await callLLM({
+        model: node.params.model || "phi:latest", // Use a default model if none specified
+        prompt: inputText,
+        temperature: node.params.temperature,
+        max_tokens: node.params.max_tokens
+      });
+      
+      console.log(`LLM response received, length: ${response.text.length}`);
+      return response.text;
+    } catch (error) {
+      console.error("Error in LLM node:", error);
+      return `Error calling LLM: ${error.message}`;
+    }
   }
 
   /**
    * Execute a summarizer node
    */
   async executeSummarizerNode(node, context) {
+    console.log(`Executing summarizer node with model: ${node.params.llm?.model}`);
+    
     // Get the input (should be an array from fan-out)
     const inputs = Array.isArray(context.currentInput) 
       ? context.currentInput 
@@ -281,14 +308,20 @@ export class PipelineExecutor {
     const prompt = template(templateVars);
     
     // Call the LLM
-    const response = await callLLM({
-      model: node.params.llm.model,
-      prompt,
-      temperature: node.params.llm.temperature,
-      max_tokens: node.params.llm.max_tokens
-    });
-    
-    return response.text;
+    try {
+      const response = await callLLM({
+        model: node.params.llm?.model || "phi:latest", // Use a default model if none specified
+        prompt,
+        temperature: node.params.llm?.temperature,
+        max_tokens: node.params.llm?.max_tokens
+      });
+      
+      console.log(`Summarizer response received, length: ${response.text.length}`);
+      return response.text;
+    } catch (error) {
+      console.error("Error in summarizer node:", error);
+      return `Error calling summarizer: ${error.message}`;
+    }
   }
 
   /**
@@ -297,5 +330,18 @@ export class PipelineExecutor {
   async executeOutputNode(node, context) {
     // For output nodes, we just pass through the input
     return context.currentInput;
+  }
+  
+  /**
+   * Emit a custom event to notify that a node is being executed
+   */
+  emitNodeExecutionEvent(nodeId) {
+    // Create and dispatch a custom event
+    const event = new CustomEvent('nodeExecution', {
+      detail: { nodeId }
+    });
+    
+    // Dispatch the event
+    window.dispatchEvent(event);
   }
 }

@@ -1,16 +1,56 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import nodeRegistry from '../utils/nodeRegistry';
+import { getOllamaModels } from '../engine/llmService';
 
 const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
+  console.log('NodeConfigPanel received:', selectedNode);
   const [nodeData, setNodeData] = useState(null);
+  const previousNodeIdRef = useRef(null);
+  const [availableModels, setAvailableModels] = useState([]);
 
   useEffect(() => {
+    // If we had a previous node and we're switching to a new one, save the changes
+    if (previousNodeIdRef.current && 
+        selectedNode && 
+        previousNodeIdRef.current !== selectedNode.id && 
+        nodeData) {
+      // Save changes to the previous node
+      onUpdateNode(nodeData);
+    }
+    
+    // Update the reference to the current node
+    previousNodeIdRef.current = selectedNode ? selectedNode.id : null;
+    
+    // Set the new node data
     if (selectedNode) {
       setNodeData({ ...selectedNode });
     } else {
       setNodeData(null);
     }
-  }, [selectedNode]);
+  }, [selectedNode, onUpdateNode]);
+
+  // Auto-save when component unmounts
+  useEffect(() => {
+    return () => {
+      if (nodeData) {
+        onUpdateNode(nodeData);
+      }
+    };
+  }, [nodeData, onUpdateNode]);
+  
+  // Fetch available models when the panel opens
+  useEffect(() => {
+    const fetchModels = async () => {
+      try {
+        const models = await getOllamaModels();
+        setAvailableModels(models);
+      } catch (error) {
+        console.error("Error fetching models:", error);
+      }
+    };
+    
+    fetchModels();
+  }, []);
 
   if (!nodeData) {
     return null;
@@ -20,13 +60,21 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
     setNodeData(prev => {
       if (!prev) return null;
       
-      return {
+      // Create a copy of the previous state
+      const updated = {
         ...prev,
         params: {
           ...prev.params,
           [key]: value
         }
       };
+      
+      // Ensure we preserve the node type
+      if (prev.type) {
+        updated.type = prev.type;
+      }
+      
+      return updated;
     });
   };
 
@@ -34,7 +82,8 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
     setNodeData(prev => {
       if (!prev) return null;
       
-      return {
+      // Create a copy of the previous state
+      const updated = {
         ...prev,
         params: {
           ...prev.params,
@@ -44,6 +93,13 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
           }
         }
       };
+      
+      // Ensure we preserve the node type
+      if (prev.type) {
+        updated.type = prev.type;
+      }
+      
+      return updated;
     });
   };
 
@@ -55,19 +111,24 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
   };
 
   // Get the node definition from the registry
-  const nodeDef = nodeRegistry[nodeData.type];
+  const nodeType = nodeData?.type;
+  const nodeDef = nodeType ? nodeRegistry[nodeType] : null;
+  
+  // Get the node parameters and label
+  const nodeParams = nodeData?.params || {};
+  const nodeLabel = nodeData?.label || 'Node';
   
   return (
-    <div className="node-config-panel animate-slide-in-right">
+    <div className="node-config-panel">
       <div className="node-config-header">
-        <h3 className="node-config-title">{nodeData.label} Configuration</h3>
+        <h3 className="node-config-title">{nodeLabel} Configuration</h3>
         <div className="node-config-subtitle">
           {nodeDef?.description || 'Configure node parameters'}
         </div>
       </div>
 
       <div className="node-config-content">
-        {Object.entries(nodeData.params).map(([key, value]) => {
+        {Object.entries(nodeParams).map(([key, value]) => {
           // Handle nested objects (like llm config)
           if (typeof value === 'object' && value !== null) {
             return (
@@ -93,6 +154,22 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
                           {childValue ? 'Enabled' : 'Disabled'}
                         </label>
                       </div>
+                    ) : childKey === 'model' ? (
+                      <select
+                        value={childValue}
+                        onChange={(e) => handleNestedChange(key, childKey, e.target.value)}
+                        className="form-control"
+                      >
+                        {/* Include the current value even if it's not in the available models */}
+                        {!availableModels.includes(childValue) && (
+                          <option value={childValue}>{childValue}</option>
+                        )}
+                        
+                        {/* List all available models */}
+                        {availableModels.map(model => (
+                          <option key={model} value={model}>{model}</option>
+                        ))}
+                      </select>
                     ) : (
                       <input
                         type={typeof childValue === 'number' ? 'number' : 'text'}
@@ -138,6 +215,22 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
                   className="form-control"
                   placeholder="Enter template text..."
                 />
+              ) : key === 'model' ? (
+                <select
+                  value={value}
+                  onChange={(e) => handleChange(key, e.target.value)}
+                  className="form-control"
+                >
+                  {/* Include the current value even if it's not in the available models */}
+                  {!availableModels.includes(value) && (
+                    <option value={value}>{value}</option>
+                  )}
+                  
+                  {/* List all available models */}
+                  {availableModels.map(model => (
+                    <option key={model} value={model}>{model}</option>
+                  ))}
+                </select>
               ) : (
                 <input
                   type={typeof value === 'number' ? 'number' : 'text'}
@@ -158,7 +251,7 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
       <div className="node-config-footer">
         <button 
           onClick={onClose}
-          className="btn btn-ghost"
+          className="btn btn-outline"
         >
           Cancel
         </button>
