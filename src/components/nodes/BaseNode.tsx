@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { Handle, Position } from 'reactflow';
-import { CustomNodeProps } from '../NodeTypes';
+import { CustomNodeProps } from '../CustomNodeProps';
 
 const BaseNode = ({ data, isConnectable }: CustomNodeProps) => {
   const hasInputs = data.type !== 'input';
