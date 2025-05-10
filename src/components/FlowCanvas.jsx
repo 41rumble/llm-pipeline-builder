@@ -77,22 +77,11 @@ const FlowCanvas = ({ onExecute }) => {
 
   // Handle node selection
   const onNodeClick = useCallback((event, node) => {
-    // Create a deep copy of the node to prevent reference issues
-    const nodeCopy = {
-      ...node,
-      data: JSON.parse(JSON.stringify(node.data))
-    };
+    console.log('Raw node selected:', node.id, 'Type:', node.data?.type);
     
-    console.log('Node selected:', nodeCopy.id, 'Type:', nodeCopy.data.type);
-    
-    // Store the node type in a data attribute for verification
-    nodeCopy._originalType = nodeCopy.data.type;
-    
-    setSelectedNode(nodeCopy);
+    // Don't create a deep copy, just use the node directly
+    setSelectedNode(node);
     setShowNodePanel(true);
-    
-    // For debugging
-    window._lastSelectedNode = nodeCopy;
   }, []);
   
   // Handle background click to deselect nodes
@@ -148,34 +137,14 @@ const FlowCanvas = ({ onExecute }) => {
   const handleUpdateNode = useCallback((updatedData) => {
     if (!selectedNode) return;
     
-    // Store the original node type for reference
-    const originalNodeType = selectedNode.data.type;
-    const originalNodeLabel = selectedNode.data.label;
-    
-    console.log('Updating node:', selectedNode.id, 'Original type:', originalNodeType);
+    console.log('Updating node:', selectedNode.id, 'Type:', updatedData.type);
     
     setNodes((nds) => 
       nds.map((node) => {
         if (node.id === selectedNode.id) {
-          // Create a deep copy of the updated data to avoid reference issues
-          const preservedData = JSON.parse(JSON.stringify(updatedData));
-          
-          // Explicitly preserve critical properties
-          preservedData.type = originalNodeType;
-          preservedData.label = originalNodeLabel;
-          
-          // Log the update for debugging
-          console.log('Node update:', {
-            id: node.id,
-            originalType: originalNodeType,
-            newType: preservedData.type,
-            params: preservedData.params
-          });
-          
           return {
             ...node,
-            data: preservedData,
-            type: node.type // Ensure React Flow node type is preserved
+            data: updatedData
           };
         }
         return node;
