@@ -479,12 +479,29 @@ body {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  margin: 20px;
 }
 
-.draggable-panel-container {
-  position: absolute;
+.panel-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   z-index: 1000;
-  cursor: move;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+}
+
+.panel-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: -1;
 }
 
 .node-config-header {

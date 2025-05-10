@@ -443,11 +443,14 @@ const FlowCanvas = ({ onExecute }) => {
         {/* Node Configuration Panel */}
         {console.log('Panel state:', { showNodePanel, selectedNode })}
         {showNodePanel && selectedNode && (
-          <NodeConfigPanel
-            selectedNode={selectedNode.data}
-            onUpdateNode={handleUpdateNode}
-            onClose={handleClosePanel}
-          />
+          <div className="panel-container">
+            <div className="panel-overlay" onClick={handleClosePanel}></div>
+            <NodeConfigPanel
+              selectedNode={selectedNode.data}
+              onUpdateNode={handleUpdateNode}
+              onClose={handleClosePanel}
+            />
+          </div>
         )}
         
         {/* Context Menu */}
