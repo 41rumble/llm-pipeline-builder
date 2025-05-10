@@ -2,7 +2,7 @@ import { useState } from 'react';
 import FlowCanvas from './components/FlowCanvas';
 import { PipelineExecutor } from './engine/pipelineExecutor';
 import { registerHandlebarsHelpers } from './utils/handlebarsHelpers';
-import './styles/enhanced.css';
+import './styles/dark-theme.css';
 
 // Register Handlebars helpers
 registerHandlebarsHelpers();
@@ -42,9 +42,9 @@ function App() {
       <header className="app-header">
         <div className="app-logo">
           <svg className="app-logo-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#3b82f6" />
-            <path d="M2 17L12 22L22 17" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M2 12L12 17L22 12" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#4285f4" />
+            <path d="M2 17L12 22L22 17" stroke="#4285f4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M2 12L12 17L22 12" stroke="#4285f4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           <span className="app-logo-text">LLM Pipeline Builder</span>
         </div>

@@ -275,8 +275,8 @@ const FlowCanvas = ({ onExecute }) => {
             fitView
             attributionPosition="bottom-right"
           >
-            <Controls />
-            <Background />
+            <Controls showFitView={true} />
+            <Background variant="dots" gap={12} size={1} />
             
             {/* Node Palette */}
             <Panel position="top-left">
