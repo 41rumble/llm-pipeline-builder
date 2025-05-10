@@ -2,7 +2,7 @@ import { useState } from 'react';
 import FlowCanvas from './components/FlowCanvas';
 import { PipelineExecutor } from './engine/pipelineExecutor';
 import { registerHandlebarsHelpers } from './utils/handlebarsHelpers';
-import './styles/basic.css';
+import './styles/enhanced.css';
 
 // Register Handlebars helpers
 registerHandlebarsHelpers();

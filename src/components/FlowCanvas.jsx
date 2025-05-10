@@ -280,15 +280,11 @@ const FlowCanvas = ({ onExecute }) => {
             
             {/* Node Palette */}
             <Panel position="top-left">
-              <div style={{ 
-                background: 'white', 
-                padding: '15px', 
-                borderRadius: '5px', 
-                boxShadow: '0 0 10px rgba(0,0,0,0.1)',
-                width: '250px'
-              }}>
-                <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', fontWeight: '600' }}>Node Palette</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div className="node-palette">
+                <div className="node-palette-header">
+                  <h3 className="node-palette-title">Node Palette</h3>
+                </div>
+                <div className="node-palette-content">
                   {nodePaletteItems.map((item) => (
                     <div
                       key={item.type}
@@ -297,33 +293,10 @@ const FlowCanvas = ({ onExecute }) => {
                         event.dataTransfer.setData('application/reactflow/type', item.type);
                         event.dataTransfer.effectAllowed = 'move';
                       }}
-                      style={{
-                        padding: '10px',
-                        border: '1px solid #e5e7eb',
-                        borderLeft: `4px solid ${
-                          item.type === 'input' ? '#3b82f6' : 
-                          item.type === 'prompt' ? '#6366f1' : 
-                          item.type === 'llm' ? '#8b5cf6' : 
-                          item.type === 'summarizer' ? '#a78bfa' : 
-                          item.type === 'output' ? '#10b981' : '#d1d5db'
-                        }`,
-                        borderRadius: '4px',
-                        cursor: 'grab',
-                        background: 'white',
-                        transition: 'all 0.2s',
-                        boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
-                        e.currentTarget.style.transform = 'translateY(-2px)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
-                        e.currentTarget.style.transform = 'translateY(0)';
-                      }}
+                      className={`node-palette-item node-palette-item-${item.type}`}
                     >
-                      <div style={{ fontWeight: '600', marginBottom: '4px' }}>{item.name}</div>
-                      <div style={{ fontSize: '0.8em', color: '#6b7280' }}>{item.description}</div>
+                      <div className="node-palette-item-title">{item.name}</div>
+                      <div className="node-palette-item-description">{item.description}</div>
                     </div>
                   ))}
                 </div>
@@ -332,18 +305,25 @@ const FlowCanvas = ({ onExecute }) => {
             
             {/* Action Buttons */}
             <Panel position="top-right">
-              <div style={{ display: 'flex', gap: '10px' }}>
+              <div className="flex gap-2">
                 <button
                   className="btn btn-primary execute-pipeline-button"
                   onClick={handleExecuteFlow}
                 >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 3L19 12L5 21V3Z" fill="currentColor" />
+                  </svg>
                   Execute Pipeline
                 </button>
                 <button
-                  className="btn btn-primary"
+                  className="btn btn-success"
                   onClick={handleExportFlow}
-                  style={{ backgroundColor: '#10b981' }}
                 >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M7 10L12 15L17 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M12 15V3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
                   Export Pipeline
                 </button>
               </div>
@@ -363,53 +343,32 @@ const FlowCanvas = ({ onExecute }) => {
         {/* Context Menu */}
         {contextMenu && contextMenu.isOpen && (
           <div 
+            className="context-menu"
             style={{
-              position: 'fixed',
               top: menuPosition.y,
-              left: menuPosition.x,
-              zIndex: 1000,
-              backgroundColor: 'white',
-              borderRadius: '4px',
-              boxShadow: '0 2px 10px rgba(0, 0, 0, 0.2)',
-              border: '1px solid #ddd',
-              overflow: 'hidden'
+              left: menuPosition.x
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ 
-              padding: '8px 12px', 
-              fontWeight: 'bold', 
-              borderBottom: '1px solid #ddd', 
-              backgroundColor: '#f5f5f5' 
-            }}>
+            <div className="context-menu-header">
               Add Node
             </div>
             {nodePaletteItems.map((item) => (
               <div 
                 key={item.type}
-                style={{
-                  padding: '8px 12px',
-                  cursor: 'pointer',
-                  borderBottom: '1px solid #eee',
-                  transition: 'background-color 0.2s',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f5f5f5'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
+                className="context-menu-item"
                 onClick={() => createNodeFromContextMenu(item.type)}
               >
-                <div style={{ 
-                  width: '8px', 
-                  height: '8px', 
-                  borderRadius: '50%', 
-                  backgroundColor: item.type === 'input' ? '#4285f4' : 
-                                  item.type === 'prompt' ? '#5e72e4' : 
-                                  item.type === 'llm' ? '#8b5cf6' : 
-                                  item.type === 'summarizer' ? '#a78bfa' : 
-                                  item.type === 'output' ? '#10b981' : '#a0a0b0'
-                }}></div>
+                <div 
+                  className="context-menu-item-indicator"
+                  style={{ 
+                    backgroundColor: item.type === 'input' ? '#3b82f6' : 
+                                    item.type === 'prompt' ? '#6366f1' : 
+                                    item.type === 'llm' ? '#8b5cf6' : 
+                                    item.type === 'summarizer' ? '#a78bfa' : 
+                                    item.type === 'output' ? '#10b981' : '#64748b'
+                  }}
+                ></div>
                 {item.name}
               </div>
             ))}
