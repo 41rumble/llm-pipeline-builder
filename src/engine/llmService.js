@@ -3,6 +3,9 @@
  * This implementation connects to real LLM services
  */
 
+// Configuration for the Ollama server
+const OLLAMA_SERVER_URL = 'http://192.168.200.184:11434';
+
 // OpenAI API call implementation
 export const callOpenAI = async (request) => {
   console.log(`[OpenAI] Calling ${request.model} with prompt: ${request.prompt.substring(0, 50)}...`);
@@ -38,7 +41,8 @@ export const callOllama = async (request) => {
     };
     
     // Make the API call to the Ollama generate endpoint
-    const response = await fetch('http://localhost:11434/api/generate', {
+    // Using the configured Ollama server address
+    const response = await fetch(`${OLLAMA_SERVER_URL}/api/generate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -61,9 +65,9 @@ export const callOllama = async (request) => {
     
     // Provide a fallback response in case of error
     return {
-      text: `Error connecting to Ollama: ${error.message}. 
+      text: `Error connecting to Ollama at ${OLLAMA_SERVER_URL}: ${error.message}. 
       
-Please make sure Ollama is running with the command 'ollama serve' and that you have the requested model (${request.model || "llama3"}) installed.
+Please make sure Ollama is running at the specified address and that you have the requested model (${request.model || "llama3"}) installed.
 
 You can install models with: ollama pull modelname`,
       model: request.model || "llama3",
@@ -75,8 +79,8 @@ You can install models with: ollama pull modelname`,
 // Get available models from Ollama
 export const getOllamaModels = async () => {
   try {
-    // Try to fetch models from Ollama
-    const response = await fetch('http://localhost:11434/api/tags', {
+    // Try to fetch models from Ollama using the configured server address
+    const response = await fetch(`${OLLAMA_SERVER_URL}/api/tags`, {
       method: 'GET'
     });
     
