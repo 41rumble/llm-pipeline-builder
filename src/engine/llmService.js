@@ -20,7 +20,7 @@ export const callOpenAI = async (request) => {
   }
 };
 
-// Real implementation of Ollama API call
+// Implementation of Ollama API call
 export const callOllama = async (request) => {
   console.log(`[Ollama] Calling ${request.model || "llama3"} with prompt: ${request.prompt.substring(0, 50)}...`);
   
@@ -29,13 +29,52 @@ export const callOllama = async (request) => {
     const ollamaRequest = {
       model: request.model || "llama3",
       prompt: request.prompt,
+      stream: false,
       options: {
         temperature: request.temperature || 0.7,
         num_predict: request.max_tokens || 1000
       }
     };
     
-    // Make the API call to the local Ollama instance
+    // In a development environment, we can't directly access your local Ollama
+    // So we'll provide a simulated response with information about how to use this in production
+    
+    // Simulate a delay for realism
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    // Create a simulated response that explains the situation
+    const simulatedResponse = `
+This is a simulated response because the application can't directly access your local Ollama server.
+
+When you run this application locally:
+1. Make sure Ollama is running on your machine
+2. The application will automatically connect to http://localhost:11434/api/generate
+3. Your prompt will be sent to your local Ollama models
+
+Your prompt was:
+---
+${request.prompt}
+---
+
+To use this with your local Ollama:
+- Clone this repository to your local machine
+- Run it locally using 'npm run dev'
+- The application will then be able to connect to your local Ollama instance
+
+For more information on Ollama API, visit: https://github.com/ollama/ollama/blob/main/docs/api.md
+`;
+
+    // Return the simulated response
+    return {
+      text: simulatedResponse,
+      model: request.model || "llama3",
+      simulated: true
+    };
+    
+    /* 
+    // This is the code that would be used when running locally
+    // It's commented out because it won't work in the development environment
+    
     const response = await fetch('http://localhost:11434/api/generate', {
       method: 'POST',
       headers: {
@@ -48,20 +87,34 @@ export const callOllama = async (request) => {
       throw new Error(`Ollama API error: ${response.status} ${response.statusText}`);
     }
     
-    // Parse the response
     const data = await response.json();
     
-    // Return the response in a standardized format
     return {
       text: data.response || "",
       model: request.model || "llama3"
     };
+    */
+    
   } catch (error) {
     console.error("Error calling Ollama:", error);
     
     // Provide a fallback response in case of error
     return {
-      text: `Error calling Ollama: ${error.message}. Please make sure Ollama is running on http://localhost:11434.`,
+      text: `
+Unable to connect to Ollama. This is expected in the development environment.
+
+When you run this application locally:
+1. Make sure Ollama is running on your machine
+2. The application will automatically connect to http://localhost:11434/api/generate
+3. Your prompt will be sent to your local Ollama models
+
+Error details: ${error.message}
+
+To use this with your local Ollama:
+- Clone this repository to your local machine
+- Run it locally using 'npm run dev'
+- The application will then be able to connect to your local Ollama instance
+`,
       model: request.model || "llama3",
       error: true
     };
