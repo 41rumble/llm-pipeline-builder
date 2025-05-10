@@ -6,9 +6,6 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
   const [nodeData, setNodeData] = useState(null);
   const previousNodeIdRef = useRef(null);
   const [availableModels, setAvailableModels] = useState([]);
-  const [isDragging, setIsDragging] = useState(false);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const dragRef = useRef(null);
 
   useEffect(() => {
     // If we had a previous node and we're switching to a new one, save the changes
@@ -17,7 +14,7 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
         previousNodeIdRef.current !== selectedNode.id && 
         nodeData) {
       // Save changes to the previous node
-      onUpdateNode(nodeData.data);
+      onUpdateNode(nodeData);
     }
     
     // Update the reference to the current node
@@ -73,16 +70,19 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
     setNodeData(prev => {
       if (!prev) return null;
       
-      // Create a deep copy of the previous state
-      const updated = JSON.parse(JSON.stringify(prev));
+      // Create a copy of the previous state
+      const updated = {
+        ...prev,
+        params: {
+          ...prev.params,
+          [key]: value
+        }
+      };
       
-      // Update the parameter value
-      if (!updated.data.params) {
-        updated.data.params = {};
+      // Ensure we preserve the node type
+      if (prev.type) {
+        updated.type = prev.type;
       }
-      updated.data.params[key] = value;
-      
-      console.log(`Changed ${key} to:`, value);
       
       return updated;
     });
@@ -92,21 +92,22 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
     setNodeData(prev => {
       if (!prev) return null;
       
-      // Create a deep copy of the previous state
-      const updated = JSON.parse(JSON.stringify(prev));
+      // Create a copy of the previous state
+      const updated = {
+        ...prev,
+        params: {
+          ...prev.params,
+          [parentKey]: {
+            ...(prev.params[parentKey]),
+            [childKey]: value
+          }
+        }
+      };
       
-      // Ensure the parent object exists
-      if (!updated.data.params) {
-        updated.data.params = {};
+      // Ensure we preserve the node type
+      if (prev.type) {
+        updated.type = prev.type;
       }
-      if (!updated.data.params[parentKey]) {
-        updated.data.params[parentKey] = {};
-      }
-      
-      // Update the nested parameter value
-      updated.data.params[parentKey][childKey] = value;
-      
-      console.log(`Changed ${parentKey}.${childKey} to:`, value);
       
       return updated;
     });
@@ -125,29 +126,27 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
   };
 
   // Get the node definition from the registry
+  // Use the data type directly to avoid undefined issues
   const nodeType = nodeData.data?.type;
   const nodeDef = nodeRegistry[nodeType];
   
-  // Get the node parameters
-  const nodeParams = nodeData.data?.params || {};
-  
-  console.log('Node config panel:', {
+  console.log('Node definition lookup:', {
     nodeType,
     nodeDef: nodeDef ? 'Found' : 'Not found',
-    params: nodeParams
+    availableTypes: Object.keys(nodeRegistry)
   });
   
   return (
     <div className="node-config-panel">
       <div className="node-config-header">
-        <h3 className="node-config-title">{nodeData.data?.label || 'Node'} Configuration</h3>
+        <h3 className="node-config-title">{nodeData.label} Configuration</h3>
         <div className="node-config-subtitle">
           {nodeDef?.description || 'Configure node parameters'}
         </div>
       </div>
 
       <div className="node-config-content">
-        {Object.entries(nodeParams).map(([key, value]) => {
+        {Object.entries(nodeData.params).map(([key, value]) => {
           // Handle nested objects (like llm config)
           if (typeof value === 'object' && value !== null) {
             return (
@@ -207,13 +206,34 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
             );
           }
           
-          // Handle model field specially
-          if (key === 'model') {
-            return (
-              <div key={key} className="form-group">
-                <label className="form-label">
-                  {key.charAt(0).toUpperCase() + key.slice(1)}:
-                </label>
+          // Handle primitive values
+          return (
+            <div key={key} className="form-group">
+              <label className="form-label">
+                {key.charAt(0).toUpperCase() + key.slice(1)}:
+              </label>
+              {typeof value === 'boolean' ? (
+                <div className="form-check">
+                  <input
+                    type="checkbox"
+                    id={key}
+                    checked={value}
+                    onChange={(e) => handleChange(key, e.target.checked)}
+                    className="form-check-input"
+                  />
+                  <label htmlFor={key} className="form-check-label">
+                    {value ? 'Enabled' : 'Disabled'}
+                  </label>
+                </div>
+              ) : key === 'template' ? (
+                <textarea
+                  value={value}
+                  onChange={(e) => handleChange(key, e.target.value)}
+                  rows={5}
+                  className="form-control"
+                  placeholder="Enter template text..."
+                />
+              ) : key === 'model' ? (
                 <select
                   value={value}
                   onChange={(e) => handleChange(key, e.target.value)}
@@ -229,82 +249,18 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
                     <option key={model} value={model}>{model}</option>
                   ))}
                 </select>
-              </div>
-            );
-          }
-          
-          // Handle template field specially
-          if (key === 'template') {
-            return (
-              <div key={key} className="form-group">
-                <label className="form-label">
-                  {key.charAt(0).toUpperCase() + key.slice(1)}:
-                </label>
-                <textarea
-                  value={value}
-                  onChange={(e) => handleChange(key, e.target.value)}
-                  className="form-control"
-                  rows={5}
-                  placeholder="Enter template..."
-                />
-              </div>
-            );
-          }
-          
-          // Handle boolean fields
-          if (typeof value === 'boolean') {
-            return (
-              <div key={key} className="form-group">
-                <label className="form-label">
-                  {key.charAt(0).toUpperCase() + key.slice(1)}:
-                </label>
-                <div className="form-check">
-                  <input
-                    type="checkbox"
-                    id={key}
-                    checked={value}
-                    onChange={(e) => handleChange(key, e.target.checked)}
-                    className="form-check-input"
-                  />
-                  <label htmlFor={key} className="form-check-label">
-                    {value ? 'Enabled' : 'Disabled'}
-                  </label>
-                </div>
-              </div>
-            );
-          }
-          
-          // Handle number fields
-          if (typeof value === 'number') {
-            return (
-              <div key={key} className="form-group">
-                <label className="form-label">
-                  {key.charAt(0).toUpperCase() + key.slice(1)}:
-                </label>
+              ) : (
                 <input
-                  type="number"
+                  type={typeof value === 'number' ? 'number' : 'text'}
                   value={value}
-                  onChange={(e) => handleChange(key, parseFloat(e.target.value))}
+                  onChange={(e) => handleChange(
+                    key, 
+                    typeof value === 'number' ? parseFloat(e.target.value) : e.target.value
+                  )}
                   className="form-control"
                   placeholder={`Enter ${key}...`}
                 />
-              </div>
-            );
-          }
-          
-          // Handle regular text fields
-          return (
-            <div key={key} className="form-group">
-              <label className="form-label">
-                {key.charAt(0).toUpperCase() + key.slice(1)}:
-              </label>
-              <input
-                type="text"
-                value={value}
-                onChange={(e) => handleChange(key, e.target.value)}
-                className="form-control"
-                placeholder={`Enter ${key}...`}
-              />
+              )}
             </div>
           );
         })}
