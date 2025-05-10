@@ -22,7 +22,21 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
     
     // Set the new node data
     if (selectedNode) {
-      setNodeData({ ...selectedNode });
+      // Create a deep copy to prevent reference issues
+      const nodeCopy = JSON.parse(JSON.stringify(selectedNode));
+      
+      // Ensure the node type is preserved
+      if (selectedNode._originalType) {
+        nodeCopy.data.type = selectedNode._originalType;
+      }
+      
+      console.log('Setting node data in config panel:', 
+        nodeCopy.id, 
+        'Type:', nodeCopy.data.type, 
+        'Original type:', selectedNode._originalType
+      );
+      
+      setNodeData(nodeCopy);
     } else {
       setNodeData(null);
     }
@@ -32,7 +46,18 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
   useEffect(() => {
     return () => {
       if (nodeData) {
-        onUpdateNode(nodeData);
+        // Ensure the node type is preserved before saving
+        if (nodeData._originalType) {
+          nodeData.data.type = nodeData._originalType;
+        }
+        
+        console.log('Auto-saving node on unmount:', 
+          nodeData.id, 
+          'Type:', nodeData.data.type, 
+          'Original type:', nodeData._originalType
+        );
+        
+        onUpdateNode(nodeData.data);
       }
     };
   }, [nodeData, onUpdateNode]);
@@ -104,13 +129,26 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
 
   const handleSave = () => {
     if (nodeData) {
-      onUpdateNode(nodeData);
+      // Ensure the node type is preserved before saving
+      if (nodeData._originalType) {
+        nodeData.data.type = nodeData._originalType;
+      }
+      
+      console.log('Saving node:', 
+        nodeData.id, 
+        'Type:', nodeData.data.type, 
+        'Original type:', nodeData._originalType
+      );
+      
+      onUpdateNode(nodeData.data);
     }
     onClose();
   };
 
   // Get the node definition from the registry
-  const nodeDef = nodeRegistry[nodeData.type];
+  // Use the original type or the current data type
+  const nodeType = nodeData._originalType || nodeData.data.type;
+  const nodeDef = nodeRegistry[nodeType];
   
   return (
     <div className="node-config-panel">

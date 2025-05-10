@@ -77,9 +77,22 @@ const FlowCanvas = ({ onExecute }) => {
 
   // Handle node selection
   const onNodeClick = useCallback((event, node) => {
-    console.log('Node selected:', node.id, 'Type:', node.data.type);
-    setSelectedNode(node);
+    // Create a deep copy of the node to prevent reference issues
+    const nodeCopy = {
+      ...node,
+      data: JSON.parse(JSON.stringify(node.data))
+    };
+    
+    console.log('Node selected:', nodeCopy.id, 'Type:', nodeCopy.data.type);
+    
+    // Store the node type in a data attribute for verification
+    nodeCopy._originalType = nodeCopy.data.type;
+    
+    setSelectedNode(nodeCopy);
     setShowNodePanel(true);
+    
+    // For debugging
+    window._lastSelectedNode = nodeCopy;
   }, []);
   
   // Handle background click to deselect nodes
