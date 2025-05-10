@@ -469,19 +469,22 @@ body {
 /* Node configuration panel */
 .node-config-panel {
   background-color: #2d2d3a;
-  border-left: 1px solid #3f3f5c;
-  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.3);
-  animation: slideInRight 0.3s ease-in-out;
+  border: 1px solid #3f3f5c;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   color: #e0e0e0;
-  position: absolute;
-  right: 0;
-  top: 0;
-  width: 300px;
-  height: 100%;
-  z-index: 10;
+  width: 350px;
+  max-height: 80vh;
+  z-index: 1000;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+}
+
+.draggable-panel-container {
+  position: absolute;
+  z-index: 1000;
+  cursor: move;
 }
 
 .node-config-header {
@@ -491,6 +494,18 @@ body {
   position: sticky;
   top: 0;
   z-index: 1;
+  cursor: move;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.node-config-drag-handle {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  color: #a0a0b0;
+  font-size: 16px;
 }
 
 .node-config-title {
