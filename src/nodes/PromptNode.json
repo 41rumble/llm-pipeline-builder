@@ -1,0 +1,14 @@
+{
+  "name": "PromptNode",
+  "type": "prompt",
+  "input": ["text"],
+  "output": ["text_list"],
+  "template": "Break this into 5 questions:\n\n{{query}}",
+  "llm": {
+    "model": "gpt-4",
+    "format": "json_array"
+  },
+  "parser": "json_array",
+  "fanOut": true,
+  "description": "Formats input into a prompt template and sends to LLM"
+}

@@ -1,0 +1,7 @@
+{
+  "name": "InputNode",
+  "type": "input",
+  "input": [],
+  "output": ["text"],
+  "description": "Starting point for the pipeline, provides initial input"
+}

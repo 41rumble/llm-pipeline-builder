@@ -1,0 +1,7 @@
+{
+  "name": "OutputNode",
+  "type": "output",
+  "input": ["text"],
+  "output": [],
+  "description": "Final node in the pipeline, displays or exports the result"
+}

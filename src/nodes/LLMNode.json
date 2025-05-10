@@ -1,0 +1,12 @@
+{
+  "name": "LLMNode",
+  "type": "llm",
+  "input": ["text"],
+  "output": ["text"],
+  "llm": {
+    "model": "gpt-4",
+    "temperature": 0.7,
+    "max_tokens": 1000
+  },
+  "description": "Sends text to an LLM and returns the response"
+}

@@ -1,0 +1,13 @@
+{
+  "name": "SummarizerNode",
+  "type": "summarizer",
+  "input": ["text_list"],
+  "output": ["text"],
+  "template": "Given the following information, provide a concise summary:\n\n{{text}}",
+  "llm": {
+    "model": "gpt-4",
+    "temperature": 0.3,
+    "max_tokens": 500
+  },
+  "description": "Aggregates multiple inputs and generates a summary"
+}
