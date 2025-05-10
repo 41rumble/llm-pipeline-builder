@@ -127,11 +127,11 @@ const FlowCanvas = ({ onExecute }) => {
         params: createDefaultParams(nodeDef),
       };
       
-      // Create the new node with ensured visible position
+      // Create the new node with a good position
       const newNode = {
         id: `${nodeType}-${uuidv4()}`,
         type: 'default',
-        position: ensureVisiblePosition(contextMenu.position),
+        position: getNewNodePosition(),
         data: newNodeData,
       };
       
@@ -140,20 +140,7 @@ const FlowCanvas = ({ onExecute }) => {
       setNodes(newNodes);
       setContextMenu(null);
       
-      // Center the view on the new node with a fixed zoom level
-      if (reactFlowInstance) {
-        setTimeout(() => {
-          // First set a fixed zoom
-          reactFlowInstance.setViewport({ x: 0, y: 0, zoom: 1 });
-          
-          // Then fit view to include all nodes with padding
-          reactFlowInstance.fitView({ 
-            padding: 0.2, 
-            includeHiddenNodes: false,
-            duration: 200
-          });
-        }, 50);
-      }
+      // Don't automatically adjust the viewport - let the user control it
     },
     [contextMenu, reactFlowInstance, setNodes, nodes]
   );
@@ -189,11 +176,11 @@ const FlowCanvas = ({ onExecute }) => {
         params: createDefaultParams(nodeDef),
       };
 
-      // Create the new node with ensured visible position
+      // Create the new node with a good position
       const newNode = {
         id: `${nodeType}-${uuidv4()}`,
         type: 'default',
-        position: ensureVisiblePosition(position),
+        position: getNewNodePosition(),
         data: newNodeData,
       };
 
@@ -201,36 +188,32 @@ const FlowCanvas = ({ onExecute }) => {
       const newNodes = [...nodes, newNode];
       setNodes(newNodes);
       
-      // Center the view on the new node with a fixed zoom level
-      if (reactFlowInstance) {
-        setTimeout(() => {
-          // First set a fixed zoom
-          reactFlowInstance.setViewport({ x: 0, y: 0, zoom: 1 });
-          
-          // Then fit view to include all nodes with padding
-          reactFlowInstance.fitView({ 
-            padding: 0.2, 
-            includeHiddenNodes: false,
-            duration: 200
-          });
-        }, 50);
-      }
+      // Don't automatically adjust the viewport - let the user control it
     },
     [reactFlowInstance, setNodes, nodes]
   );
 
-  // Helper to ensure position is within visible area
-  const ensureVisiblePosition = (position) => {
-    // Default position if something goes wrong
-    if (!position || typeof position.x !== 'number' || typeof position.y !== 'number') {
-      return { x: 100, y: 100 };
+  // Helper to calculate a good position for a new node
+  const getNewNodePosition = () => {
+    // If there are no nodes, start in the center
+    if (nodes.length === 0) {
+      return { x: 250, y: 100 };
     }
     
-    // Ensure position is within reasonable bounds
-    return {
-      x: position.x || 100,
-      y: position.y || 100
-    };
+    // Find the rightmost node
+    let maxX = 0;
+    let avgY = 0;
+    
+    nodes.forEach(node => {
+      maxX = Math.max(maxX, node.position.x);
+      avgY += node.position.y;
+    });
+    
+    // Calculate average Y position
+    avgY = avgY / nodes.length;
+    
+    // Place new node to the right of existing nodes
+    return { x: maxX + 300, y: avgY };
   };
 
   // Helper to create default parameters for a new node
@@ -320,8 +303,12 @@ const FlowCanvas = ({ onExecute }) => {
             onContextMenu={onContextMenu}
             nodeTypes={nodeTypes}
             defaultViewport={{ x: 0, y: 0, zoom: 1 }}
-            minZoom={0.5}
-            maxZoom={2}
+            minZoom={0.1}
+            maxZoom={4}
+            zoomOnScroll={true}
+            zoomOnPinch={true}
+            panOnScroll={true}
+            panOnDrag={true}
             attributionPosition="bottom-right"
           >
             <Controls showFitView={true} />
@@ -374,6 +361,24 @@ const FlowCanvas = ({ onExecute }) => {
                     <path d="M12 15V3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                   Export Pipeline
+                </button>
+                <button
+                  className="action-button"
+                  style={{ backgroundColor: '#34344a' }}
+                  onClick={() => {
+                    if (reactFlowInstance) {
+                      reactFlowInstance.fitView({ padding: 0.2 });
+                    }
+                  }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2" />
+                    <path d="M9 3V9H3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M15 3V9H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M9 21V15H3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M15 21V15H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  Fit View
                 </button>
               </div>
             </Panel>
