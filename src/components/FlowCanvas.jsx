@@ -43,6 +43,12 @@ const FlowCanvas = ({ onExecute }) => {
     setSelectedNode(node);
     setShowNodePanel(true);
   }, []);
+  
+  // Handle background click to deselect nodes
+  const onPaneClick = useCallback(() => {
+    setSelectedNode(null);
+    setShowNodePanel(false);
+  }, []);
 
   // Handle edge connections
   const onConnect = useCallback((connection) => {
@@ -271,6 +277,7 @@ const FlowCanvas = ({ onExecute }) => {
             onDrop={onDrop}
             onDragOver={onDragOver}
             onContextMenu={onContextMenu}
+            onPaneClick={onPaneClick}
             nodeTypes={nodeTypes}
             fitView
             attributionPosition="bottom-right"
