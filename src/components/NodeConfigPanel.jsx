@@ -3,6 +3,7 @@ import nodeRegistry from '../utils/nodeRegistry';
 import { getOllamaModels } from '../engine/llmService';
 
 const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
+  console.log('NodeConfigPanel received:', selectedNode);
   const [nodeData, setNodeData] = useState(null);
   const previousNodeIdRef = useRef(null);
   const [availableModels, setAvailableModels] = useState([]);

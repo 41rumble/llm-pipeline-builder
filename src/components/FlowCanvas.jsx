@@ -441,9 +441,10 @@ const FlowCanvas = ({ onExecute }) => {
         </div>
         
         {/* Node Configuration Panel */}
+        {console.log('Panel state:', { showNodePanel, selectedNode })}
         {showNodePanel && selectedNode && (
           <NodeConfigPanel
-            selectedNode={selectedNode.data}
+            selectedNode={selectedNode}
             onUpdateNode={handleUpdateNode}
             onClose={handleClosePanel}
           />
