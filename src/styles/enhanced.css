@@ -1,4 +1,5 @@
 /* Enhanced styling for the LLM Pipeline Builder */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 /* Reset some browser defaults */
 html, body, #root {
@@ -8,9 +9,6 @@ html, body, #root {
   width: 100%;
   overflow: hidden;
 }
-
-/* Import Inter font */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 /* Base styles */
 body {
