@@ -556,9 +556,24 @@ body {
 
 .react-flow__node {
   transition: all 0.2s ease;
+  background-color: transparent !important;
+  border: none !important;
+  width: auto !important;
+}
+
+.react-flow__node-default {
+  background-color: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  width: auto !important;
 }
 
 .react-flow__node.selected {
+  box-shadow: none !important;
+}
+
+.react-flow__node.selected .node-container {
   box-shadow: 0 0 0 2px #4285f4, 0 4px 8px rgba(0, 0, 0, 0.4) !important;
 }
 
