@@ -184,22 +184,7 @@ const FlowCanvas = ({ onExecute }) => {
       setNodes(newNodes);
       setContextMenu(null);
       
-      // Manually position the viewport to show the new node
-      if (reactFlowInstance) {
-        // Use a timeout to ensure the node is added before adjusting the view
-        setTimeout(() => {
-          // Calculate a viewport that shows the new node
-          const nodeX = newNode.position.x;
-          const nodeY = newNode.position.y;
-          
-          // Set the viewport to center on the new node
-          reactFlowInstance.setViewport({ 
-            x: -nodeX + window.innerWidth / 4, 
-            y: -nodeY + window.innerHeight / 4, 
-            zoom: 1 
-          });
-        }, 50);
-      }
+      // Don't adjust the viewport - keep the view stable
     },
     [contextMenu, reactFlowInstance, setNodes, nodes]
   );
@@ -247,22 +232,7 @@ const FlowCanvas = ({ onExecute }) => {
       const newNodes = [...nodes, newNode];
       setNodes(newNodes);
       
-      // Manually position the viewport to show the new node
-      if (reactFlowInstance) {
-        // Use a timeout to ensure the node is added before adjusting the view
-        setTimeout(() => {
-          // Calculate a viewport that shows the new node
-          const nodeX = newNode.position.x;
-          const nodeY = newNode.position.y;
-          
-          // Set the viewport to center on the new node
-          reactFlowInstance.setViewport({ 
-            x: -nodeX + window.innerWidth / 4, 
-            y: -nodeY + window.innerHeight / 4, 
-            zoom: 1 
-          });
-        }, 50);
-      }
+      // Don't adjust the viewport - keep the view stable
     },
     [reactFlowInstance, setNodes, nodes]
   );
@@ -360,33 +330,14 @@ const FlowCanvas = ({ onExecute }) => {
     description: nodeDef.description
   }));
 
-  // Handle manual scrolling with mouse wheel
-  const handleWheel = useCallback((event) => {
-    if (!reactFlowInstance || event.ctrlKey || event.metaKey) return; // Let React Flow handle zooming
-    
-    event.preventDefault();
-    
-    const currentViewport = reactFlowInstance.getViewport();
-    
-    // Determine scroll direction and amount
-    const scrollX = event.shiftKey ? event.deltaY : 0;
-    const scrollY = !event.shiftKey ? event.deltaY : 0;
-    
-    // Update viewport
-    reactFlowInstance.setViewport({
-      x: currentViewport.x - scrollX,
-      y: currentViewport.y - scrollY,
-      zoom: currentViewport.zoom
-    });
-  }, [reactFlowInstance]);
+  // We'll let React Flow handle mouse wheel interactions directly
 
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
       <ReactFlowProvider>
         <div 
           ref={reactFlowWrapper} 
-          style={{ width: '100%', height: '100%', display: 'flex', flex: 1 }}
-          onWheel={handleWheel}>
+          style={{ width: '100%', height: '100%', display: 'flex', flex: 1 }}>
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -404,7 +355,8 @@ const FlowCanvas = ({ onExecute }) => {
             maxZoom={4}
             zoomOnScroll={true}
             zoomOnPinch={true}
-            panOnScroll={false}
+            panOnScroll={true}
+            panOnScrollMode="free"
             panOnDrag={true}
             onlyRenderVisibleElements={false}
             attributionPosition="bottom-right"
