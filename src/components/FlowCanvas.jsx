@@ -84,10 +84,10 @@ const FlowCanvas = ({ onExecute }) => {
       
       if (!reactFlowWrapper.current || !reactFlowInstance) return;
       
-      const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
-      const position = reactFlowInstance.project({
-        x: event.clientX - reactFlowBounds.left,
-        y: event.clientY - reactFlowBounds.top,
+      // Use the newer API to convert screen to flow position
+      const position = reactFlowInstance.screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
       });
       
       setMenuPosition({ x: event.clientX, y: event.clientY });
@@ -127,25 +127,35 @@ const FlowCanvas = ({ onExecute }) => {
         params: createDefaultParams(nodeDef),
       };
       
-      // Create the new node
+      // Create the new node with ensured visible position
       const newNode = {
         id: `${nodeType}-${uuidv4()}`,
         type: 'default',
-        position: contextMenu.position,
+        position: ensureVisiblePosition(contextMenu.position),
         data: newNodeData,
       };
       
-      setNodes((nds) => nds.concat(newNode));
+      // Add the new node
+      const newNodes = [...nodes, newNode];
+      setNodes(newNodes);
       setContextMenu(null);
       
-      // Prevent automatic zoom by setting viewport manually
+      // Center the view on the new node with a fixed zoom level
       if (reactFlowInstance) {
         setTimeout(() => {
+          // First set a fixed zoom
           reactFlowInstance.setViewport({ x: 0, y: 0, zoom: 1 });
+          
+          // Then fit view to include all nodes with padding
+          reactFlowInstance.fitView({ 
+            padding: 0.2, 
+            includeHiddenNodes: false,
+            duration: 200
+          });
         }, 50);
       }
     },
-    [contextMenu, reactFlowInstance, setNodes]
+    [contextMenu, reactFlowInstance, setNodes, nodes]
   );
 
   // Create a new node from the node palette
@@ -160,17 +170,16 @@ const FlowCanvas = ({ onExecute }) => {
 
       if (!reactFlowWrapper.current || !reactFlowInstance) return;
 
-      const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
       const nodeType = event.dataTransfer.getData('application/reactflow/type');
       
       // Get node definition from registry
       const nodeDef = Object.values(nodeRegistry).find(def => def.type === nodeType);
       if (!nodeDef) return;
 
-      // Get position where node was dropped
-      const position = reactFlowInstance.project({
-        x: event.clientX - reactFlowBounds.left,
-        y: event.clientY - reactFlowBounds.top,
+      // Get position where node was dropped using the newer API
+      const position = reactFlowInstance.screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
       });
 
       // Create initial node data based on node definition
@@ -180,25 +189,49 @@ const FlowCanvas = ({ onExecute }) => {
         params: createDefaultParams(nodeDef),
       };
 
-      // Create the new node
+      // Create the new node with ensured visible position
       const newNode = {
         id: `${nodeType}-${uuidv4()}`,
         type: 'default',
-        position,
+        position: ensureVisiblePosition(position),
         data: newNodeData,
       };
 
-      setNodes((nds) => nds.concat(newNode));
+      // Add the new node
+      const newNodes = [...nodes, newNode];
+      setNodes(newNodes);
       
-      // Prevent automatic zoom by setting viewport manually
+      // Center the view on the new node with a fixed zoom level
       if (reactFlowInstance) {
         setTimeout(() => {
+          // First set a fixed zoom
           reactFlowInstance.setViewport({ x: 0, y: 0, zoom: 1 });
+          
+          // Then fit view to include all nodes with padding
+          reactFlowInstance.fitView({ 
+            padding: 0.2, 
+            includeHiddenNodes: false,
+            duration: 200
+          });
         }, 50);
       }
     },
-    [reactFlowInstance, setNodes]
+    [reactFlowInstance, setNodes, nodes]
   );
+
+  // Helper to ensure position is within visible area
+  const ensureVisiblePosition = (position) => {
+    // Default position if something goes wrong
+    if (!position || typeof position.x !== 'number' || typeof position.y !== 'number') {
+      return { x: 100, y: 100 };
+    }
+    
+    // Ensure position is within reasonable bounds
+    return {
+      x: position.x || 100,
+      y: position.y || 100
+    };
+  };
 
   // Helper to create default parameters for a new node
   const createDefaultParams = (nodeDef) => {
