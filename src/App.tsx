@@ -80,22 +80,10 @@ function App() {
               />
               <button
                 onClick={() => {
-                  const flowCanvas = document.querySelector('.react-flow') as any;
-                  if (flowCanvas && flowCanvas.__reactFlowInstance) {
-                    const pipeline = {
-                      nodes: flowCanvas.__reactFlowInstance.getNodes().map((node: any) => ({
-                        id: node.id,
-                        type: node.data.type,
-                        params: node.data.params
-                      })),
-                      edges: flowCanvas.__reactFlowInstance.getEdges().map((edge: any) => ({
-                        source: edge.source,
-                        target: edge.target,
-                        sourceHandle: edge.sourceHandle,
-                        targetHandle: edge.targetHandle
-                      }))
-                    };
-                    handleExecutePipeline(pipeline);
+                  // The Execute button in the FlowCanvas component will handle this
+                  const executeButton = document.querySelector('.execute-pipeline-button') as HTMLButtonElement;
+                  if (executeButton) {
+                    executeButton.click();
                   }
                 }}
                 disabled={isExecuting}

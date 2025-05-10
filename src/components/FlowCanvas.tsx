@@ -15,6 +15,7 @@ import ReactFlow, {
   ConnectionLineType,
   Panel
 } from 'reactflow';
+import 'reactflow/dist/base.css';
 import 'reactflow/dist/style.css';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -181,8 +182,11 @@ const FlowCanvas = ({ onExecute }: FlowCanvasProps) => {
   
   // Execute the current flow
   const handleExecuteFlow = () => {
-    if (onExecute) {
-      const pipeline = exportToJSON(nodes, edges);
+    if (onExecute && reactFlowInstance) {
+      const pipeline = exportToJSON(
+        reactFlowInstance.getNodes(),
+        reactFlowInstance.getEdges()
+      );
       onExecute(pipeline);
     }
   };
@@ -245,6 +249,7 @@ const FlowCanvas = ({ onExecute }: FlowCanvasProps) => {
             {/* Action Buttons */}
             <Panel position="top-right" style={{ display: 'flex', gap: '10px' }}>
               <button
+                className="execute-pipeline-button"
                 onClick={handleExecuteFlow}
                 style={{
                   padding: '8px 15px',
