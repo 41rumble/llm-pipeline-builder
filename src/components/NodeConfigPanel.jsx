@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import nodeRegistry from '../utils/nodeRegistry';
+import { getOllamaModels } from '../engine/llmService';
 
 const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
   const [nodeData, setNodeData] = useState(null);
   const previousNodeIdRef = useRef(null);
+  const [availableModels, setAvailableModels] = useState([]);
 
   useEffect(() => {
     // If we had a previous node and we're switching to a new one, save the changes
@@ -34,6 +36,20 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
       }
     };
   }, [nodeData, onUpdateNode]);
+  
+  // Fetch available models when the panel opens
+  useEffect(() => {
+    const fetchModels = async () => {
+      try {
+        const models = await getOllamaModels();
+        setAvailableModels(models);
+      } catch (error) {
+        console.error("Error fetching models:", error);
+      }
+    };
+    
+    fetchModels();
+  }, []);
 
   if (!nodeData) {
     return null;
@@ -116,6 +132,22 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
                           {childValue ? 'Enabled' : 'Disabled'}
                         </label>
                       </div>
+                    ) : childKey === 'model' ? (
+                      <select
+                        value={childValue}
+                        onChange={(e) => handleNestedChange(key, childKey, e.target.value)}
+                        className="form-control"
+                      >
+                        {/* Include the current value even if it's not in the available models */}
+                        {!availableModels.includes(childValue) && (
+                          <option value={childValue}>{childValue}</option>
+                        )}
+                        
+                        {/* List all available models */}
+                        {availableModels.map(model => (
+                          <option key={model} value={model}>{model}</option>
+                        ))}
+                      </select>
                     ) : (
                       <input
                         type={typeof childValue === 'number' ? 'number' : 'text'}

@@ -26,6 +26,7 @@ export const callOllama = async (request) => {
   
   try {
     // Prepare the request to the Ollama API
+    // According to Ollama API docs: https://github.com/ollama/ollama/blob/main/docs/api.md
     const ollamaRequest = {
       model: request.model || "llama3",
       prompt: request.prompt,
@@ -36,45 +37,7 @@ export const callOllama = async (request) => {
       }
     };
     
-    // In a development environment, we can't directly access your local Ollama
-    // So we'll provide a simulated response with information about how to use this in production
-    
-    // Simulate a delay for realism
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    // Create a simulated response that explains the situation
-    const simulatedResponse = `
-This is a simulated response because the application can't directly access your local Ollama server.
-
-When you run this application locally:
-1. Make sure Ollama is running on your machine
-2. The application will automatically connect to http://localhost:11434/api/generate
-3. Your prompt will be sent to your local Ollama models
-
-Your prompt was:
----
-${request.prompt}
----
-
-To use this with your local Ollama:
-- Clone this repository to your local machine
-- Run it locally using 'npm run dev'
-- The application will then be able to connect to your local Ollama instance
-
-For more information on Ollama API, visit: https://github.com/ollama/ollama/blob/main/docs/api.md
-`;
-
-    // Return the simulated response
-    return {
-      text: simulatedResponse,
-      model: request.model || "llama3",
-      simulated: true
-    };
-    
-    /* 
-    // This is the code that would be used when running locally
-    // It's commented out because it won't work in the development environment
-    
+    // Make the API call to the Ollama generate endpoint
     const response = await fetch('http://localhost:11434/api/generate', {
       method: 'POST',
       headers: {
@@ -93,31 +56,54 @@ For more information on Ollama API, visit: https://github.com/ollama/ollama/blob
       text: data.response || "",
       model: request.model || "llama3"
     };
-    */
-    
   } catch (error) {
-    console.error("Error calling Ollama:", error);
+    console.error("Error in Ollama service:", error);
     
     // Provide a fallback response in case of error
     return {
-      text: `
-Unable to connect to Ollama. This is expected in the development environment.
+      text: `Error connecting to Ollama: ${error.message}. 
+      
+Please make sure Ollama is running with the command 'ollama serve' and that you have the requested model (${request.model || "llama3"}) installed.
 
-When you run this application locally:
-1. Make sure Ollama is running on your machine
-2. The application will automatically connect to http://localhost:11434/api/generate
-3. Your prompt will be sent to your local Ollama models
-
-Error details: ${error.message}
-
-To use this with your local Ollama:
-- Clone this repository to your local machine
-- Run it locally using 'npm run dev'
-- The application will then be able to connect to your local Ollama instance
-`,
+You can install models with: ollama pull modelname`,
       model: request.model || "llama3",
       error: true
     };
+  }
+};
+
+// Get available models from Ollama
+export const getOllamaModels = async () => {
+  try {
+    // Try to fetch models from Ollama
+    const response = await fetch('http://localhost:11434/api/tags', {
+      method: 'GET'
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Ollama API error: ${response.status} ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    
+    // Extract just the model names from the response
+    if (data.models && Array.isArray(data.models)) {
+      return data.models.map(model => model.name);
+    }
+    
+    // Return the list of models
+    return [];
+  } catch (error) {
+    console.error("Error fetching Ollama models:", error);
+    
+    // Return some default models if we can't connect
+    return [
+      "llama3",
+      "mistral",
+      "gemma",
+      "phi",
+      "codellama"
+    ];
   }
 };
 
