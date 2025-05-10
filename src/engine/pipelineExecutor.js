@@ -241,10 +241,44 @@ export class PipelineExecutor {
       // Parse the response if needed
       if (node.params.parser === 'json_array' && node.params.fanOut) {
         try {
-          return JSON.parse(response.text);
+          // Try to find JSON array in the response
+          const text = response.text;
+          const jsonMatch = text.match(/\[[\s\S]*\]/);
+          
+          if (jsonMatch) {
+            // If we found a JSON array pattern, try to parse it
+            return JSON.parse(jsonMatch[0]);
+          } else {
+            // If no JSON array pattern found, try to parse the whole text
+            return JSON.parse(text);
+          }
         } catch (error) {
           console.error('Failed to parse JSON array response:', error);
-          return [response.text]; // Fallback to single item array
+          console.log('Response text:', response.text);
+          
+          // If parsing fails, try to split the text into an array
+          // This is a fallback for when Ollama doesn't return proper JSON
+          const lines = response.text
+            .split(/\n/)
+            .map(line => line.trim())
+            .filter(line => line.length > 0 && !line.startsWith('[') && !line.startsWith(']'));
+            
+          if (lines.length > 0) {
+            // Clean up lines (remove numbers, quotes, etc.)
+            const cleanedLines = lines.map(line => {
+              return line
+                .replace(/^\d+[\.\)\-]\s*/, '') // Remove list markers like "1. " or "- "
+                .replace(/^["']|["']$/g, '')    // Remove quotes at start/end
+                .trim();
+            }).filter(line => line.length > 0);
+            
+            if (cleanedLines.length > 0) {
+              return cleanedLines;
+            }
+          }
+          
+          // Last resort fallback
+          return [response.text]; 
         }
       }
       
