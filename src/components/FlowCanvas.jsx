@@ -16,7 +16,6 @@ import { v4 as uuidv4 } from 'uuid';
 
 import BaseNode from './nodes/BaseNode';
 import NodeConfigPanel from './NodeConfigPanel';
-import DraggableNodeConfigPanel from './DraggableNodeConfigPanel';
 import NodeTypeDebugger from './NodeTypeDebugger';
 import NavigationHUD from './NavigationHUD';
 import nodeRegistry, { getAllNodeDefs } from '../utils/nodeRegistry';
@@ -443,7 +442,7 @@ const FlowCanvas = ({ onExecute }) => {
         
         {/* Node Configuration Panel */}
         {showNodePanel && selectedNode && (
-          <DraggableNodeConfigPanel
+          <NodeConfigPanel
             selectedNode={selectedNode.data}
             onUpdateNode={handleUpdateNode}
             onClose={handleClosePanel}
