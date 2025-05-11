@@ -390,7 +390,10 @@ export class PipelineExecutor {
       });
       
       console.log(`LLM call ${callId} completed, response length: ${response.text.length}`);
-      console.log(`LLM response (first 100 chars): ${response.text.substring(0, 100)}...`);
+      
+      // Log the complete LLM response for debugging
+      console.log(`COMPLETE LLM RESPONSE for ${callId}:`);
+      console.log(response.text);
       
       return response.text;
     } catch (error) {
@@ -407,9 +410,21 @@ export class PipelineExecutor {
     console.log(`Summarizer context: fanInCompleted=${context.fanInCompleted}, fanInSourceNodeId=${context.fanInSourceNodeId}`);
     
     // Get the input (should be an array from fan-out)
-    const inputs = Array.isArray(context.currentInput) 
-      ? context.currentInput 
-      : [context.currentInput];
+    let inputs = [];
+    
+    if (Array.isArray(context.currentInput)) {
+      // Process each item in the array
+      inputs = context.currentInput.map(item => {
+        // If the item is an object with a 'content' property (from fan-in tracking),
+        // extract just the content
+        if (item && typeof item === 'object' && 'content' in item) {
+          return item.content;
+        }
+        return item;
+      });
+    } else {
+      inputs = [context.currentInput];
+    }
     
     console.log(`Summarizer has ${inputs.length} inputs to process`);
     
@@ -447,10 +462,18 @@ export class PipelineExecutor {
       ...context.nodeResults
     };
     
+    // Log the complete template variables for debugging
+    console.log('SUMMARIZER TEMPLATE VARIABLES:');
+    console.log('originalQuery:', originalQuery);
+    console.log('sourceItems:', JSON.stringify(sourceNodeResults, null, 2));
+    console.log('items (inputs):', JSON.stringify(inputs, null, 2));
+    
     // Render the prompt
     const prompt = template(templateVars);
     
-    console.log(`Summarizer prompt (first 200 chars): ${prompt.substring(0, 200)}...`);
+    // Log the complete prompt for debugging
+    console.log('COMPLETE SUMMARIZER PROMPT:');
+    console.log(prompt);
     
     // Call the LLM
     try {
@@ -465,7 +488,10 @@ export class PipelineExecutor {
       });
       
       console.log(`Summarizer call ${callId} completed, response length: ${response.text.length}`);
-      console.log(`Summarizer response (first 100 chars): ${response.text.substring(0, 100)}...`);
+      
+      // Log the complete Summarizer response for debugging
+      console.log(`COMPLETE SUMMARIZER RESPONSE for ${callId}:`);
+      console.log(response.text);
       
       return response.text;
     } catch (error) {
