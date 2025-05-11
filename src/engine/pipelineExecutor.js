@@ -382,32 +382,51 @@ export class PipelineExecutor {
       const callId = `llm-${node.id}-${Date.now().toString(36)}`;
       console.log(`Starting LLM call ${callId}`);
       
+      // Extract the original query from the context if available
+      let originalQuery = "";
+      if (context.nodeResults) {
+        // Look for input node results
+        const inputNodeEntry = Object.entries(context.nodeResults)
+          .find(([id, result]) => this.nodeMap.get(id)?.type === 'input');
+        
+        if (inputNodeEntry) {
+          originalQuery = inputNodeEntry[1];
+        }
+      }
+      
       // Add a system prompt to encourage detailed responses
-      const enhancedPrompt = `# EXPERT ANSWER REQUIRED
+      const enhancedPrompt = `# EXPERT RESEARCHER RESPONSE
 
-## Question
+## Research Question
 ${typeof inputText === 'string' ? inputText : String(inputText)}
 
+${originalQuery ? `## Original Topic\nThis question relates to the broader topic: "${originalQuery}"\n` : ''}
+
 ## Instructions
-You are a subject matter expert tasked with providing a comprehensive, detailed answer to this question. Your response must be:
+You are a leading researcher writing a detailed response for an educational publication. Your answer must:
 
-1. EXTREMELY THOROUGH - Cover all aspects of the topic in depth
-2. WELL-STRUCTURED - Use clear organization with logical flow
-3. DETAILED - Include specific facts, examples, and explanations
-4. EDUCATIONAL - Explain concepts clearly as if teaching the topic
-5. ACCURATE - Provide precise, factual information
-6. COMPREHENSIVE - Aim for at least 300-500 words to fully address the question
+1. DIRECTLY ADDRESS THE SPECIFIC QUESTION ASKED - Focus precisely on what was asked
+2. BE COMPREHENSIVE - Cover all relevant aspects in depth (500+ words)
+3. INCLUDE SPECIFIC EXAMPLES - Provide concrete examples, case studies, or evidence
+4. BE FACTUALLY ACCURATE - Base your response on established research and facts
+5. BE WELL-STRUCTURED - Use clear organization with logical flow
+6. BE EDUCATIONAL - Explain concepts clearly for an intelligent but non-expert audience
 
-Your goal is to create a response that would be suitable for an educational textbook or scholarly article on this topic. Do not leave any important aspects unexplained.
+## Response Requirements
+- Write as a human expert, not an AI
+- Never apologize for limitations or mention being an AI
+- Never say "I don't have specific information" - use your expertise
+- Include specific facts, figures, and examples where relevant
+- Maintain an authoritative, educational tone throughout
 
 ## Response Format
 Structure your answer with:
-- A clear introduction explaining the topic
-- Multiple paragraphs covering different aspects
-- Specific examples and details
+- A direct answer to the question in the first paragraph
+- Multiple sections covering different aspects of the answer
+- Specific examples and supporting evidence
 - A conclusion summarizing key points
 
-Begin your response immediately with the comprehensive answer:`;
+Begin your expert response now:`;
       
       const response = await callLLM({
         model: node.params.model || "phi:latest", // Use a default model if none specified

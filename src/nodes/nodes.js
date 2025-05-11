@@ -13,25 +13,50 @@ export const PromptNodeDef = {
   type: "prompt",
   input: ["text"],
   output: ["text_list"],
-  template: `Generate 5 in-depth, analytical questions about the following topic. 
-These questions should explore different aspects and require detailed explanations.
-Return each question as a separate item in a JSON array:
+  template: `# GENERATE TARGETED RESEARCH QUESTIONS
 
-Topic: {{query}}
+You are a research coordinator tasked with generating 5 specific, focused questions about this topic:
 
-Instructions:
-1. Make questions specific and focused
-2. Cover different aspects of the topic
-3. Aim for questions that require explanatory answers, not simple facts
-4. Format as a JSON array with one question per item
-5. Do not include numbering in the questions themselves`,
+"{{query}}"
+
+## REQUIREMENTS
+1. Generate EXACTLY 5 in-depth, analytical questions that directly relate to the topic
+2. Each question must explore a different aspect of the topic
+3. Questions should require detailed explanations, not simple facts
+4. Questions must be specific enough to generate comprehensive responses
+5. Format your response as a JSON array with one question per item
+
+## IMPORTANT NOTES
+- If the topic is about animals that domesticated themselves, include questions about:
+  * Which specific animals self-domesticated and how
+  * The evolutionary processes involved
+  * The timeline and historical evidence
+  * The differences between self-domestication and human-driven domestication
+  * Modern examples or ongoing self-domestication
+
+- If the topic is about any other subject, ensure questions cover:
+  * Historical context and development
+  * Scientific or technical aspects
+  * Practical applications or real-world examples
+  * Controversies or debates in the field
+  * Future trends or developments
+
+## OUTPUT FORMAT
+Return ONLY a JSON array with 5 questions, like this:
+[
+  "First detailed question about the topic?",
+  "Second detailed question about the topic?",
+  "Third detailed question about the topic?",
+  "Fourth detailed question about the topic?",
+  "Fifth detailed question about the topic?"
+]`,
   llm: {
     model: "phi:latest",
     format: "json_array"
   },
   parser: "json_array",
   fanOut: true,
-  description: "Formats input into a prompt template, generates multiple in-depth questions, and fans out to downstream nodes"
+  description: "Formats input into a prompt template, generates multiple targeted questions, and fans out to downstream nodes"
 };
 
 export const LLMNodeDef = {
@@ -52,52 +77,57 @@ export const SummarizerNodeDef = {
   type: "summarizer",
   input: ["text_list"],
   output: ["text"],
-  template: `# CRITICAL INSTRUCTION: GENERATE COMPLETE COMPREHENSIVE RESPONSE
+  template: `# DIRECT INSTRUCTION: YOU ARE A HUMAN EXPERT RESEARCHER
 
-You are tasked with creating a COMPLETE, DETAILED, and COMPREHENSIVE response to the query below.
+You are a human expert researcher writing a comprehensive educational article directly answering this specific query:
 
-## QUERY TO ANSWER
+## QUERY
 "{{originalQuery}}"
 
-## SOURCE MATERIAL
-I have collected expert answers to questions about this topic. Use ALL of this information to create your response:
+## RESEARCH MATERIAL
+You have gathered the following expert information about this topic:
 
 {{text}}
 
-## CRITICAL INSTRUCTIONS
-1. Your response MUST be COMPLETE and COMPREHENSIVE - at least 800-1000 words
-2. You MUST include ALL key information from the source material
-3. You MUST organize your response with clear headings and subheadings
-4. You MUST provide specific details, examples, and explanations
-5. You MUST write as if creating an authoritative educational resource on this topic
+## YOUR TASK
+Write a comprehensive, detailed educational article that directly answers the query. Your article must:
 
-## WARNING
-- DO NOT generate only a conclusion or summary
-- DO NOT end with phrases like "I hope this helps" or "Do you have any questions?"
-- DO NOT skip any important information from the source material
-- Your response MUST be COMPLETE with introduction, body sections, and conclusion
+1. DIRECTLY address the specific query about "{{originalQuery}}"
+2. Include ALL relevant information from the research material
+3. Be structured with clear headings and subheadings
+4. Be at least 1000 words in length
+5. Include specific examples, facts, and explanations
 
-## REQUIRED RESPONSE FORMAT
-Your response MUST follow this exact structure:
+## IMPORTANT REQUIREMENTS
+- You are writing as a human expert, NOT an AI
+- NEVER refer to yourself as an AI, language model, or assistant
+- NEVER say "I cannot provide" or "I don't have specific information"
+- NEVER apologize for limitations
+- NEVER mention that you're using "research material" or "expert answers"
+- If the research material doesn't fully address the query, use your expertise to provide a complete answer
+- Write in an authoritative, educational tone
 
-# Complete Answer: {{originalQuery}}
+## ARTICLE FORMAT
+Your article must follow this structure:
+
+# {{originalQuery}}: A Comprehensive Analysis
 
 ## Introduction
-[Write a thorough introduction to the topic - minimum 100 words]
+[Thorough introduction to the topic that directly addresses the query]
 
-## [First Main Topic]
-[Detailed explanation with specific information - minimum 200 words]
+## [First Main Section]
+[Detailed explanation with specific information]
 
-## [Second Main Topic]
-[Detailed explanation with specific information - minimum 200 words]
+## [Second Main Section]
+[Detailed explanation with specific information]
 
 ## [Additional Sections as Needed]
-[Include all relevant information from source material]
+[Include all relevant information]
 
 ## Conclusion
-[Comprehensive summary of key points - minimum 100 words]
+[Comprehensive summary]
 
-BEGIN YOUR COMPLETE RESPONSE NOW:`,
+BEGIN YOUR ARTICLE NOW:`,
   llm: {
     model: "phi:latest",
     temperature: 0.1,
