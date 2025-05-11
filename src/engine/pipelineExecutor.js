@@ -382,9 +382,25 @@ export class PipelineExecutor {
       const callId = `llm-${node.id}-${Date.now().toString(36)}`;
       console.log(`Starting LLM call ${callId}`);
       
+      // Add a system prompt to encourage detailed responses
+      const enhancedPrompt = `# DETAILED ANSWER REQUIRED
+
+## Question
+${typeof inputText === 'string' ? inputText : String(inputText)}
+
+## Instructions
+Please provide a comprehensive, detailed answer to this question. Include:
+- Thorough explanations of concepts
+- Specific examples where relevant
+- Multiple perspectives if applicable
+- Clear organization with logical flow
+- Accurate and precise information
+
+Your response should be informative, well-structured, and demonstrate deep understanding of the topic.`;
+      
       const response = await callLLM({
         model: node.params.model || "phi:latest", // Use a default model if none specified
-        prompt: typeof inputText === 'string' ? inputText : String(inputText),
+        prompt: enhancedPrompt,
         temperature: node.params.temperature,
         max_tokens: node.params.max_tokens
       });
@@ -450,9 +466,18 @@ export class PipelineExecutor {
     // Compile the template with Handlebars
     const template = Handlebars.compile(node.params.template);
     
+    // Format each input with clear separation and numbering
+    const formattedInputs = inputs.map((input, index) => {
+      return `ANSWER ${index + 1}:\n${input}`;
+    });
+    
+    // Join all inputs with clear separation
+    const combinedText = formattedInputs.join('\n\n' + '-'.repeat(50) + '\n\n');
+    
     // Create template variables with enhanced context
     const templateVars = {
-      text: inputs.join('\n\n'),
+      text: combinedText,
+      combinedText: combinedText, // Add as a separate variable for template flexibility
       items: inputs,
       originalQuery: originalQuery,
       query: originalQuery, // For backward compatibility

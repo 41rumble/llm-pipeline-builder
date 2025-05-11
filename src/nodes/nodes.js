@@ -13,14 +13,25 @@ export const PromptNodeDef = {
   type: "prompt",
   input: ["text"],
   output: ["text_list"],
-  template: "Generate 5 detailed questions about the following topic. Return each question as a separate item in a JSON array:\n\n{{query}}",
+  template: `Generate 5 in-depth, analytical questions about the following topic. 
+These questions should explore different aspects and require detailed explanations.
+Return each question as a separate item in a JSON array:
+
+Topic: {{query}}
+
+Instructions:
+1. Make questions specific and focused
+2. Cover different aspects of the topic
+3. Aim for questions that require explanatory answers, not simple facts
+4. Format as a JSON array with one question per item
+5. Do not include numbering in the questions themselves`,
   llm: {
-    model: "gpt-4",
+    model: "phi:latest",
     format: "json_array"
   },
   parser: "json_array",
   fanOut: true,
-  description: "Formats input into a prompt template, generates multiple questions, and fans out to downstream nodes"
+  description: "Formats input into a prompt template, generates multiple in-depth questions, and fans out to downstream nodes"
 };
 
 export const LLMNodeDef = {
@@ -29,9 +40,9 @@ export const LLMNodeDef = {
   input: ["text"],
   output: ["text"],
   llm: {
-    model: "gpt-4",
+    model: "phi:latest",
     temperature: 0.7,
-    max_tokens: 1000
+    max_tokens: 2000
   },
   description: "Sends text to an LLM and returns the response"
 };
@@ -41,23 +52,32 @@ export const SummarizerNodeDef = {
   type: "summarizer",
   input: ["text_list"],
   output: ["text"],
-  template: `The original query was: "{{originalQuery}}"
+  template: `# TASK: COMPREHENSIVE SYNTHESIS
 
-Based on the following answers to questions about this topic, provide a comprehensive response:
+## Original Query
+"{{originalQuery}}"
 
-{{#each items}}
-ANSWER {{@index}}: 
-{{this}}
+## Multiple Expert Answers
+Below are detailed answers to questions about this topic:
 
-{{/each}}
+{{text}}
 
-Please synthesize all the information above into a cohesive response to the original query. Make sure to address the key points from each answer and provide a well-structured, informative response.`,
+## Your Task
+You are tasked with creating a comprehensive, detailed response to the original query by synthesizing all the information provided above.
+
+1. Extract the key facts, concepts, and explanations from each answer
+2. Organize this information into a coherent structure
+3. Provide a thorough, well-articulated response that addresses all aspects of the query
+4. Include specific details and examples from the answers
+5. Ensure your response is accurate, complete, and informative
+
+Your synthesis should be detailed and comprehensive, incorporating the valuable information from all the expert answers.`,
   llm: {
-    model: "gpt-4",
+    model: "phi:latest",
     temperature: 0.3,
-    max_tokens: 500
+    max_tokens: 4000
   },
-  description: "Aggregates multiple inputs and generates a summary with the original query as context"
+  description: "Aggregates multiple inputs and generates a comprehensive synthesis with the original query as context"
 };
 
 export const OutputNodeDef = {
