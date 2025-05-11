@@ -32,7 +32,7 @@ export const RAGNodeDef = {
   output: ["text"],
   params: {
     openwebui: {
-      knowledgeBase: "",
+      knowledgeBases: [],  // Array of knowledge base IDs
       topK: 5,
       minScore: 0.7
     },

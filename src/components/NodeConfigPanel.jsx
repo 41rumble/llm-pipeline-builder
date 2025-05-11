@@ -170,10 +170,11 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
                           {childValue ? 'Enabled' : 'Disabled'}
                         </label>
                       </div>
-                    ) : key === 'openwebui' && childKey === 'knowledgeBase' ? (
+                    ) : key === 'openwebui' && childKey === 'knowledgeBases' ? (
                       <KnowledgeBaseSelector
                         value={childValue}
                         onChange={(value) => handleNestedChange(key, childKey, value)}
+                        multiple={true}
                       />
                     ) : childKey === 'model' ? (
                       <select

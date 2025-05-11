@@ -4,11 +4,17 @@ import { getOpenWebUIUrl } from '../utils/config';
 
 /**
  * Component for selecting knowledge bases from OpenWebUI
+ * @param {Array|string} value - The selected knowledge base ID(s)
+ * @param {Function} onChange - Callback when selection changes
+ * @param {boolean} multiple - Whether to allow multiple selections
  */
-const KnowledgeBaseSelector = ({ value, onChange }) => {
+const KnowledgeBaseSelector = ({ value, onChange, multiple = false }) => {
   const [knowledgeBases, setKnowledgeBases] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  
+  // Convert value to array for consistent handling
+  const selectedValues = Array.isArray(value) ? value : (value ? [value] : []);
 
   // Function to fetch knowledge bases
   const fetchKnowledgeBases = async () => {
@@ -41,8 +47,21 @@ const KnowledgeBaseSelector = ({ value, onChange }) => {
 
   // Handle selection change
   const handleChange = (e) => {
-    const selectedId = e.target.value;
-    onChange(selectedId);
+    if (multiple) {
+      // For multiple selection, get all selected options
+      const options = e.target.options;
+      const selectedIds = [];
+      for (let i = 0; i < options.length; i++) {
+        if (options[i].selected) {
+          selectedIds.push(options[i].value);
+        }
+      }
+      onChange(selectedIds);
+    } else {
+      // For single selection
+      const selectedId = e.target.value;
+      onChange(selectedId);
+    }
   };
 
   // Render the selector
@@ -51,12 +70,14 @@ const KnowledgeBaseSelector = ({ value, onChange }) => {
       <div className="kb-selector-header" style={{ display: 'flex', gap: '8px' }}>
         <select 
           className="form-control" 
-          value={value || ''} 
+          value={multiple ? selectedValues : (selectedValues[0] || '')} 
           onChange={handleChange}
           disabled={loading}
           style={{ flexGrow: 1 }}
+          multiple={multiple}
+          size={multiple ? Math.min(5, knowledgeBases.length + 1) : 1}
         >
-          <option value="">Select a knowledge base</option>
+          {!multiple && <option value="">Select a knowledge base</option>}
           {knowledgeBases.map((kb) => (
             <option key={kb.id} value={kb.id}>
               {kb.name} ({kb.documentCount} docs)
@@ -86,9 +107,26 @@ const KnowledgeBaseSelector = ({ value, onChange }) => {
         </div>
       )}
       
-      {value && (
-        <div className="selected-knowledge-base" style={{ marginTop: '8px', fontStyle: 'italic' }}>
-          {knowledgeBases.find(kb => kb.id === value)?.description || ''}
+      {selectedValues.length > 0 && (
+        <div className="selected-knowledge-bases" style={{ marginTop: '8px' }}>
+          <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
+            Selected Knowledge Bases:
+          </div>
+          <ul style={{ margin: 0, paddingLeft: '20px' }}>
+            {selectedValues.map(id => {
+              const kb = knowledgeBases.find(kb => kb.id === id);
+              return (
+                <li key={id} style={{ marginBottom: '2px' }}>
+                  <span style={{ fontWeight: 'bold' }}>{kb?.name || id}</span>
+                  {kb?.description && (
+                    <span style={{ fontStyle: 'italic', color: '#666', marginLeft: '4px' }}>
+                      - {kb.description}
+                    </span>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
         </div>
       )}
     </div>

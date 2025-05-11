@@ -377,8 +377,9 @@ export class PipelineExecutor {
     // Query the knowledge base
     try {
       // Check if we have the required configuration
-      if (!node.params?.openwebui || !node.params.openwebui.knowledgeBase) {
-        console.warn("RAG node is missing OpenWebUI configuration or knowledge base");
+      const knowledgeBases = node.params?.openwebui?.knowledgeBases || [];
+      if (!node.params?.openwebui || knowledgeBases.length === 0) {
+        console.warn("RAG node is missing OpenWebUI configuration or knowledge bases");
         
         // Compile the template without context
         const template = Handlebars.compile(node.params.template || '{{query}}');
@@ -390,13 +391,36 @@ export class PipelineExecutor {
         return template(templateVars);
       }
       
-      // Query the knowledge base
-      const ragResults = await queryKnowledgeBase({
-        knowledgeBase: node.params.openwebui.knowledgeBase,
+      // Query all knowledge bases and combine results
+      const allResults = [];
+      const allContexts = [];
+      
+      for (const knowledgeBase of knowledgeBases) {
+        // Query the knowledge base
+        const ragResults = await queryKnowledgeBase({
+          knowledgeBase: knowledgeBase,
+          query: inputText,
+          topK: node.params.openwebui.topK || 5,
+          minScore: node.params.openwebui.minScore || 0.7
+        });
+        
+        // Add results to the combined results
+        if (ragResults.results && ragResults.results.length > 0) {
+          allResults.push(...ragResults.results);
+        }
+        
+        // Add context to the combined contexts
+        if (ragResults.context) {
+          allContexts.push(ragResults.context);
+        }
+      }
+      
+      // Create a combined result object
+      const ragResults = {
         query: inputText,
-        topK: node.params.openwebui.topK || 5,
-        minScore: node.params.openwebui.minScore || 0.7
-      });
+        results: allResults,
+        context: allContexts.join('\n\n')
+      };
       
       // Process RAG results
       
