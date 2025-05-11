@@ -31,12 +31,20 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
       };
       
       // For RAG nodes, ensure they have an openwebui object
-      if (selectedNode.type === 'rag' && !nodeWithParams.params.openwebui) {
-        nodeWithParams.params.openwebui = {
-          knowledgeBase: "",
-          topK: 5,
-          minScore: 0.7
-        };
+      if (selectedNode.type === 'rag') {
+        if (!nodeWithParams.params.openwebui) {
+          nodeWithParams.params.openwebui = {
+            knowledgeBases: [],
+            topK: 5,
+            minScore: 0.7
+          };
+        } else if (nodeWithParams.params.openwebui.knowledgeBase && !nodeWithParams.params.openwebui.knowledgeBases) {
+          // Handle backward compatibility - convert old knowledgeBase to knowledgeBases array
+          const oldValue = nodeWithParams.params.openwebui.knowledgeBase;
+          nodeWithParams.params.openwebui.knowledgeBases = oldValue ? [oldValue] : [];
+          // Keep the old property for now to avoid breaking existing pipelines
+          // but we'll primarily use knowledgeBases going forward
+        }
       }
       
       setNodeData(nodeWithParams);

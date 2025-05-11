@@ -67,32 +67,66 @@ const KnowledgeBaseSelector = ({ value, onChange, multiple = false }) => {
   // Render the selector
   return (
     <div className="knowledge-base-selector">
-      <div className="kb-selector-header" style={{ display: 'flex', gap: '8px' }}>
-        <select 
-          className="form-control" 
-          value={multiple ? selectedValues : (selectedValues[0] || '')} 
-          onChange={handleChange}
-          disabled={loading}
-          style={{ flexGrow: 1 }}
-          multiple={multiple}
-          size={multiple ? Math.min(5, knowledgeBases.length + 1) : 1}
-        >
-          {!multiple && <option value="">Select a knowledge base</option>}
-          {knowledgeBases.map((kb) => (
-            <option key={kb.id} value={kb.id}>
-              {kb.name} ({kb.documentCount} docs)
-            </option>
-          ))}
-        </select>
-        
-        <button 
-          className="btn btn-sm btn-outline-secondary" 
-          onClick={fetchKnowledgeBases}
-          disabled={loading}
-          title="Refresh knowledge bases"
-        >
-          {loading ? 'Loading...' : 'Refresh'}
-        </button>
+      <div className="kb-selector-header">
+        {multiple ? (
+          <div>
+            <div style={{ marginBottom: '8px', fontWeight: 'bold' }}>
+              Select Knowledge Bases (hold Ctrl/Cmd to select multiple):
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <select 
+                className="form-control" 
+                value={selectedValues} 
+                onChange={handleChange}
+                disabled={loading}
+                style={{ flexGrow: 1 }}
+                multiple={true}
+                size={Math.min(5, knowledgeBases.length || 5)}
+              >
+                {knowledgeBases.map((kb) => (
+                  <option key={kb.id} value={kb.id}>
+                    {kb.name} ({kb.documentCount} docs)
+                  </option>
+                ))}
+              </select>
+              
+              <button 
+                className="btn btn-sm btn-outline-secondary" 
+                onClick={fetchKnowledgeBases}
+                disabled={loading}
+                title="Refresh knowledge bases"
+              >
+                {loading ? 'Loading...' : 'Refresh'}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <select 
+              className="form-control" 
+              value={selectedValues[0] || ''} 
+              onChange={handleChange}
+              disabled={loading}
+              style={{ flexGrow: 1 }}
+            >
+              <option value="">Select a knowledge base</option>
+              {knowledgeBases.map((kb) => (
+                <option key={kb.id} value={kb.id}>
+                  {kb.name} ({kb.documentCount} docs)
+                </option>
+              ))}
+            </select>
+            
+            <button 
+              className="btn btn-sm btn-outline-secondary" 
+              onClick={fetchKnowledgeBases}
+              disabled={loading}
+              title="Refresh knowledge bases"
+            >
+              {loading ? 'Loading...' : 'Refresh'}
+            </button>
+          </div>
+        )}
       </div>
       
       {knowledgeBases.length === 0 && !loading && !error && (
