@@ -215,6 +215,10 @@ body {
   border-top: 3px solid #10b981;
 }
 
+.node-rag {
+  border-top: 3px solid #06b6d4; /* Cyan color */
+}
+
 .node-executing {
   animation: pulse 1.5s infinite;
   z-index: 10;
@@ -464,6 +468,10 @@ body {
 
 .node-palette-item-output {
   border-left: 4px solid #10b981;
+}
+
+.node-palette-item-rag {
+  border-left: 4px solid #06b6d4; /* Cyan color */
 }
 
 /* Node configuration panel */

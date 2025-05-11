@@ -30,6 +30,7 @@ export const RAGNodeDef = {
   type: "rag",
   input: ["text"],
   output: ["text"],
+  description: "Retrieval Augmented Generation - Enhances prompts with knowledge base content",
   params: {
     openwebui: {
       knowledgeBases: [],  // Array of knowledge base IDs
