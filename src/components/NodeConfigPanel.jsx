@@ -33,7 +33,7 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
       // For RAG nodes, ensure they have an openwebui object
       if (selectedNode.type === 'rag' && !nodeWithParams.params.openwebui) {
         nodeWithParams.params.openwebui = {
-          url: "http://localhost:8080",
+          url: "http://localhost:3005",
           knowledgeBase: "",
           topK: 5,
           minScore: 0.7
@@ -175,7 +175,7 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
                       <KnowledgeBaseSelector
                         value={childValue}
                         onChange={(value) => handleNestedChange(key, childKey, value)}
-                        serverUrl={nodeParams.openwebui?.url || 'http://localhost:8080'}
+                        serverUrl={nodeParams.openwebui?.url || 'http://localhost:3005'}
                       />
                     ) : childKey === 'model' ? (
                       <select
