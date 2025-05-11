@@ -52,57 +52,55 @@ export const SummarizerNodeDef = {
   type: "summarizer",
   input: ["text_list"],
   output: ["text"],
-  template: `# COMPREHENSIVE SYNTHESIS TASK
+  template: `# CRITICAL INSTRUCTION: GENERATE COMPLETE COMPREHENSIVE RESPONSE
 
-You are an expert research assistant tasked with creating a detailed, thorough response to the following query by synthesizing information from multiple expert answers.
+You are tasked with creating a COMPLETE, DETAILED, and COMPREHENSIVE response to the query below.
 
-## ORIGINAL QUERY
+## QUERY TO ANSWER
 "{{originalQuery}}"
 
-## EXPERT ANSWERS
+## SOURCE MATERIAL
+I have collected expert answers to questions about this topic. Use ALL of this information to create your response:
+
 {{text}}
 
-## YOUR TASK
-Create a comprehensive, detailed explanation that fully answers the original query by synthesizing ALL information from the expert answers above.
+## CRITICAL INSTRUCTIONS
+1. Your response MUST be COMPLETE and COMPREHENSIVE - at least 800-1000 words
+2. You MUST include ALL key information from the source material
+3. You MUST organize your response with clear headings and subheadings
+4. You MUST provide specific details, examples, and explanations
+5. You MUST write as if creating an authoritative educational resource on this topic
 
-## REQUIREMENTS
-1. Your response must be at least 500 words and extremely detailed
-2. Extract and include ALL key information from EACH expert answer
-3. Organize the information into a coherent, logical structure with clear sections
-4. Include specific details, examples, and explanations from the source material
-5. Provide thorough analysis that covers all aspects of the topic
-6. Use headings and subheadings to organize your response
-7. End with a conclusion that summarizes the key points
+## WARNING
+- DO NOT generate only a conclusion or summary
+- DO NOT end with phrases like "I hope this helps" or "Do you have any questions?"
+- DO NOT skip any important information from the source material
+- Your response MUST be COMPLETE with introduction, body sections, and conclusion
 
-## IMPORTANT NOTES
-- Do NOT simply summarize or provide a brief overview
-- Your response should be comprehensive and include ALL relevant information
-- Do NOT add any disclaimers or notes about the information provided
-- Write as if you are the definitive expert on this topic
+## REQUIRED RESPONSE FORMAT
+Your response MUST follow this exact structure:
 
-## RESPONSE FORMAT
-Your response should follow this structure:
-
-# Comprehensive Answer: [Query Topic]
+# Complete Answer: {{originalQuery}}
 
 ## Introduction
-[Thorough introduction to the topic]
+[Write a thorough introduction to the topic - minimum 100 words]
 
-## [Main Section 1]
-[Detailed explanation with specific information]
+## [First Main Topic]
+[Detailed explanation with specific information - minimum 200 words]
 
-## [Main Section 2]
-[Detailed explanation with specific information]
+## [Second Main Topic]
+[Detailed explanation with specific information - minimum 200 words]
 
-[Additional sections as needed]
+## [Additional Sections as Needed]
+[Include all relevant information from source material]
 
 ## Conclusion
-[Comprehensive summary of key points]
+[Comprehensive summary of key points - minimum 100 words]
 
-Now, provide your comprehensive response:`,
+BEGIN YOUR COMPLETE RESPONSE NOW:`,
   llm: {
     model: "phi:latest",
-    temperature: 0.2,
+    temperature: 0.1,
     max_tokens: 4000
   },
   description: "Aggregates multiple inputs and generates a comprehensive synthesis with the original query as context"

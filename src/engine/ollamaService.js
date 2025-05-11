@@ -26,6 +26,17 @@ export const generateText = async (model, prompt, options = {}) => {
   console.log(`[Ollama] Calling ${model} with prompt: ${prompt.substring(0, 50)}...`);
   
   try {
+    // Ensure max_tokens is a number and has a reasonable value
+    let maxTokens = 4000; // Default to 4000
+    if (options.max_tokens !== undefined) {
+      // Convert to number if it's a string
+      maxTokens = parseInt(options.max_tokens, 10);
+      // If parsing failed or value is unreasonable, use default
+      if (isNaN(maxTokens) || maxTokens < 100 || maxTokens > 32000) {
+        maxTokens = 4000;
+      }
+    }
+    
     // Prepare the request to the Ollama API for the generate endpoint
     const generateRequest = {
       model: model || "phi:latest", // Use a smaller model by default
@@ -33,12 +44,12 @@ export const generateText = async (model, prompt, options = {}) => {
       stream: false,
       options: {
         temperature: options.temperature || 0.7,
-        num_predict: options.max_tokens || 4000
+        num_predict: maxTokens
       }
     };
     
-    console.log(`Ollama request options: temperature=${options.temperature}, max_tokens=${options.max_tokens}`);
-    console.log(`Using num_predict=${generateRequest.options.num_predict}`);
+    console.log(`Ollama request options: temperature=${options.temperature}, requested max_tokens=${options.max_tokens}`);
+    console.log(`Using num_predict=${generateRequest.options.num_predict} for model ${model}`);
     
     console.log(`Connecting to Ollama at ${OLLAMA_SERVER_URL}/api/generate`);
     

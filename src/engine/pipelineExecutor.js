@@ -479,11 +479,30 @@ Begin your response immediately with the comprehensive answer:`;
     
     // Format each input with clear separation and numbering
     const formattedInputs = inputs.map((input, index) => {
-      return `ANSWER ${index + 1}:\n${input}`;
+      // Clean up the input - remove any "I hope this helps" or similar phrases
+      let cleanedInput = input;
+      if (typeof cleanedInput === 'string') {
+        // Remove common conclusion phrases
+        const conclusionPhrases = [
+          "I hope this helps",
+          "I hope this information helps",
+          "Do you have any other questions",
+          "If you have any questions",
+          "Thank you for your question"
+        ];
+        
+        for (const phrase of conclusionPhrases) {
+          if (cleanedInput.includes(phrase)) {
+            cleanedInput = cleanedInput.split(phrase)[0].trim();
+          }
+        }
+      }
+      
+      return `EXPERT ANSWER ${index + 1}:\n${cleanedInput}`;
     });
     
     // Join all inputs with clear separation
-    const combinedText = formattedInputs.join('\n\n' + '-'.repeat(50) + '\n\n');
+    const combinedText = formattedInputs.join('\n\n' + '='.repeat(80) + '\n\n');
     
     // Create template variables with enhanced context
     const templateVars = {
@@ -528,6 +547,26 @@ Begin your response immediately with the comprehensive answer:`;
       // Log the complete Summarizer response for debugging
       console.log(`COMPLETE SUMMARIZER RESPONSE for ${callId}:`);
       console.log(response.text);
+      
+      // Check if the response looks like it might be truncated or just a conclusion
+      if (response.text.length < 200 || 
+          response.text.includes("I hope this") || 
+          response.text.includes("Thank you") ||
+          response.text.includes("Do you have any other questions")) {
+        console.log("WARNING: Summarizer response appears to be truncated or incomplete!");
+        
+        // Create a more explicit error message to return instead
+        return `INCOMPLETE RESPONSE DETECTED: The summarizer appears to have generated an incomplete response. 
+        
+Original response: "${response.text}"
+
+This might be due to:
+1. The model not properly processing all the input data
+2. The model generating a conclusion without the main content
+3. Response truncation issues
+
+Please try again with a different query or check the model settings.`;
+      }
       
       return response.text;
     } catch (error) {
