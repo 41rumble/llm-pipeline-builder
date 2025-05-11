@@ -1,14 +1,15 @@
 /**
  * Service for interacting with OpenWebUI knowledge bases
  */
+import { getOpenWebUIUrl, getOpenWebUIToken } from '../utils/config';
 
 /**
  * Get available knowledge bases from OpenWebUI
- * @param {string} baseUrl - The base URL of the OpenWebUI instance
- * @param {string} token - Authentication token (optional)
+ * @param {string} baseUrl - The base URL of the OpenWebUI instance (optional, defaults to env var)
+ * @param {string} token - Authentication token (optional, defaults to env var)
  * @returns {Promise<Array>} - Array of knowledge base objects
  */
-export const getKnowledgeBases = async (baseUrl, token = '') => {
+export const getKnowledgeBases = async (baseUrl = getOpenWebUIUrl(), token = getOpenWebUIToken()) => {
   try {
     console.log(`Fetching knowledge bases from OpenWebUI at ${baseUrl}/api/v1/knowledge/`);
     
@@ -60,8 +61,8 @@ export const getKnowledgeBases = async (baseUrl, token = '') => {
 /**
  * Query a knowledge base for relevant documents
  * @param {Object} options - Query options
- * @param {string} options.baseUrl - The base URL of the OpenWebUI instance
- * @param {string} options.token - Authentication token (optional)
+ * @param {string} options.baseUrl - The base URL of the OpenWebUI instance (optional, defaults to env var)
+ * @param {string} options.token - Authentication token (optional, defaults to env var)
  * @param {string} options.knowledgeBase - The ID or name of the knowledge base
  * @param {string} options.query - The query text
  * @param {number} options.topK - Number of results to return
@@ -70,7 +71,14 @@ export const getKnowledgeBases = async (baseUrl, token = '') => {
  */
 export const queryKnowledgeBase = async (options) => {
   try {
-    const { baseUrl, token = '', knowledgeBase, query, topK = 5, minScore = 0.7 } = options;
+    const { 
+      baseUrl = getOpenWebUIUrl(), 
+      token = getOpenWebUIToken(), 
+      knowledgeBase, 
+      query, 
+      topK = 5, 
+      minScore = 0.7 
+    } = options;
     
     console.log(`Querying OpenWebUI knowledge base "${knowledgeBase}" with: ${query}`);
     

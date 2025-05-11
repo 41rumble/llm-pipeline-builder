@@ -1,27 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { getKnowledgeBases } from '../engine/openwebuiService';
+import { getOpenWebUIUrl } from '../utils/config';
 
 /**
  * Component for selecting knowledge bases from OpenWebUI
  */
-const KnowledgeBaseSelector = ({ value, onChange, serverUrl, token = '' }) => {
+const KnowledgeBaseSelector = ({ value, onChange }) => {
   const [knowledgeBases, setKnowledgeBases] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   // Function to fetch knowledge bases
   const fetchKnowledgeBases = async () => {
-    if (!serverUrl) {
-      setError('Server URL is required');
-      return;
-    }
-
     setLoading(true);
     setError(null);
 
     try {
+      const serverUrl = getOpenWebUIUrl();
       console.log(`Fetching knowledge bases from ${serverUrl}...`);
-      const bases = await getKnowledgeBases(serverUrl, token);
+      const bases = await getKnowledgeBases();
       console.log(`Fetched ${bases.length} knowledge bases:`, bases);
       setKnowledgeBases(bases);
       
@@ -37,10 +34,10 @@ const KnowledgeBaseSelector = ({ value, onChange, serverUrl, token = '' }) => {
     }
   };
 
-  // Fetch knowledge bases when the component mounts or serverUrl changes
+  // Fetch knowledge bases when the component mounts
   useEffect(() => {
     fetchKnowledgeBases();
-  }, [serverUrl]);
+  }, []);
 
   // Handle selection change
   const handleChange = (e) => {

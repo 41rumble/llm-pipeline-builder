@@ -1,9 +1,10 @@
 /**
  * Service for making Ollama API calls
  */
+import { getOllamaServerUrl } from '../utils/config';
 
-// Configuration for the Ollama server
-export const OLLAMA_SERVER_URL = 'http://192.168.200.184:11434';
+// Configuration for the Ollama server from environment variables
+export const OLLAMA_SERVER_URL = getOllamaServerUrl();
 
 // Helper function to handle API errors
 const handleApiError = async (response, context) => {

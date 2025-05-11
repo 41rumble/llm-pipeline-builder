@@ -41,13 +41,30 @@ export const exportToOpenWebUI = (nodes, edges) => {
   // First convert to our internal pipeline format
   const pipeline = exportToJSON(nodes, edges);
   
-  // Then convert to OpenWebUI format
-  // This is a placeholder - the actual format will depend on OpenWebUI's requirements
-  return {
-    ...pipeline,
+  // Convert to OpenWebUI Pipelines format
+  // Based on the OpenWebUI Pipelines documentation
+  const openWebUIPipeline = {
+    id: pipeline.id,
+    name: pipeline.name || "Pipeline",
+    description: pipeline.description || "Pipeline created with LLM Pipeline Builder",
+    nodes: pipeline.nodes.map(node => ({
+      id: node.id,
+      type: node.type,
+      params: node.params || {},
+      position: node.position || { x: 0, y: 0 }
+    })),
+    edges: pipeline.edges.map(edge => ({
+      id: edge.id || `edge-${edge.source}-${edge.target}`,
+      source: edge.source,
+      target: edge.target
+    })),
+    created_at: pipeline.created_at || new Date().toISOString(),
+    updated_at: pipeline.updated_at || new Date().toISOString(),
     version: "1.0",
-    format: "openwebui"
+    format: "openwebui-pipeline"
   };
+  
+  return openWebUIPipeline;
 };
 
 /**

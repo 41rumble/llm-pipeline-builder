@@ -392,8 +392,6 @@ export class PipelineExecutor {
       
       // Query the knowledge base
       const ragResults = await queryKnowledgeBase({
-        baseUrl: node.params.openwebui.url || "http://localhost:3005",
-        token: node.params.openwebui.token || "",
         knowledgeBase: node.params.openwebui.knowledgeBase,
         query: inputText,
         topK: node.params.openwebui.topK || 5,

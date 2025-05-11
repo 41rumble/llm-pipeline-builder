@@ -32,8 +32,6 @@ export const RAGNodeDef = {
   output: ["text"],
   params: {
     openwebui: {
-      url: "http://localhost:3005",
-      token: "",
       knowledgeBase: "",
       topK: 5,
       minScore: 0.7
