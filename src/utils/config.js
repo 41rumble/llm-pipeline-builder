@@ -1,20 +1,22 @@
 /**
  * Configuration utility for environment variables
+ * 
+ * Note: In a browser environment, we can't use process.env directly.
+ * Instead, we'll use Vite's import.meta.env which makes environment
+ * variables available at build time.
  */
-import dotenv from 'dotenv';
-
-// Load environment variables from .env file
-dotenv.config();
 
 // OpenWebUI configuration
 export const OPENWEBUI_CONFIG = {
-  url: process.env.OPENWEBUI_URL || 'http://localhost:3005',
-  token: process.env.OPENWEBUI_TOKEN || '',
+  // Use Vite's environment variables (defined in .env files)
+  // These are replaced at build time
+  url: import.meta.env.VITE_OPENWEBUI_URL || 'http://localhost:3005',
+  token: import.meta.env.VITE_OPENWEBUI_TOKEN || '',
 };
 
 // Ollama configuration
 export const OLLAMA_CONFIG = {
-  url: process.env.OLLAMA_SERVER_URL || 'http://localhost:11434',
+  url: import.meta.env.VITE_OLLAMA_SERVER_URL || 'http://localhost:11434',
 };
 
 /**
