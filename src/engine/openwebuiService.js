@@ -11,22 +11,14 @@ import { getOpenWebUIUrl, getOpenWebUIToken } from '../utils/config';
  */
 export const getKnowledgeBases = async (baseUrl = getOpenWebUIUrl(), token = getOpenWebUIToken()) => {
   try {
-    console.log(`Fetching knowledge bases from OpenWebUI at ${baseUrl}/api/v1/knowledge/`);
-    
     // Prepare headers with authentication if token is provided
     const headers = {
       'Accept': 'application/json'
     };
     
     if (token) {
-      console.log('Using authentication token for knowledge base request');
       headers['Authorization'] = `Bearer ${token}`;
-    } else {
-      console.warn('No authentication token provided for OpenWebUI API');
     }
-    
-    // Log the headers for debugging
-    console.log('Request headers:', JSON.stringify(headers));
     
     const response = await fetch(`${baseUrl}/api/v1/knowledge/`, {
       method: 'GET',
@@ -38,7 +30,6 @@ export const getKnowledgeBases = async (baseUrl = getOpenWebUIUrl(), token = get
     }
     
     const data = await response.json();
-    console.log("Raw knowledge base data:", data);
     
     // Format the knowledge bases for display in a dropdown
     // Based on the actual API response format: [{"id":"...", "name":"...", "description":"..."}]
@@ -49,8 +40,6 @@ export const getKnowledgeBases = async (baseUrl = getOpenWebUIUrl(), token = get
       documentCount: kb.documentCount || kb.document_count || 
                     (kb.data && kb.data.file_ids ? kb.data.file_ids.length : 0)
     }));
-    
-    console.log(`Found ${knowledgeBases.length} knowledge bases:`, knowledgeBases);
     return knowledgeBases;
   } catch (error) {
     console.error("Error fetching OpenWebUI knowledge bases:", error);
@@ -86,8 +75,6 @@ export const queryKnowledgeBase = async (options) => {
       minScore = 0.7 
     } = options;
     
-    console.log(`Querying OpenWebUI knowledge base "${knowledgeBase}" with: ${query}`);
-    
     // Construct the query URL
     const queryParams = new URLSearchParams({
       collection_id: knowledgeBase,  // Use collection_id instead of collection_name
@@ -97,7 +84,6 @@ export const queryKnowledgeBase = async (options) => {
     });
     
     const queryUrl = `${baseUrl}/api/v1/knowledge/query?${queryParams.toString()}`;
-    console.log(`Query URL: ${queryUrl}`);
     
     // Prepare headers with authentication if token is provided
     const headers = {
@@ -106,14 +92,7 @@ export const queryKnowledgeBase = async (options) => {
     
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
-      console.log('Using authentication token for query request');
-    } else {
-      console.warn('No authentication token provided for OpenWebUI API query');
     }
-    
-    // Log the headers and URL for debugging
-    console.log('Query URL:', queryUrl);
-    console.log('Request headers:', JSON.stringify(headers));
     
     const response = await fetch(queryUrl, {
       method: 'GET',
@@ -125,7 +104,6 @@ export const queryKnowledgeBase = async (options) => {
     }
     
     const data = await response.json();
-    console.log("Raw query response:", data);
     
     // Extract results from the response
     // The response might be in different formats depending on the API

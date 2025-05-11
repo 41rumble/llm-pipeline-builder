@@ -398,7 +398,7 @@ export class PipelineExecutor {
         minScore: node.params.openwebui.minScore || 0.7
       });
       
-      console.log(`RAG query returned ${ragResults.results.length} results`);
+      // Process RAG results
       
       // Compile the template with the context
       const template = Handlebars.compile(node.params.template || '{{query}}\n\n{{#if context}}Context information:\n{{context}}{{/if}}');

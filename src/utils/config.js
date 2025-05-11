@@ -46,7 +46,6 @@ export const getOpenWebUIToken = () => {
   }
   
   // Finally, fall back to the environment variable
-  console.log('Getting OpenWebUI token from env:', OPENWEBUI_CONFIG.token ? 'Token exists' : 'No token found');
   return OPENWEBUI_CONFIG.token;
 };
 
