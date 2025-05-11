@@ -19,8 +19,14 @@ export const getKnowledgeBases = async (baseUrl = getOpenWebUIUrl(), token = get
     };
     
     if (token) {
+      console.log('Using authentication token for knowledge base request');
       headers['Authorization'] = `Bearer ${token}`;
+    } else {
+      console.warn('No authentication token provided for OpenWebUI API');
     }
+    
+    // Log the headers for debugging
+    console.log('Request headers:', JSON.stringify(headers));
     
     const response = await fetch(`${baseUrl}/api/v1/knowledge/`, {
       method: 'GET',
@@ -100,8 +106,14 @@ export const queryKnowledgeBase = async (options) => {
     
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
-      console.log('Using authentication token for request');
+      console.log('Using authentication token for query request');
+    } else {
+      console.warn('No authentication token provided for OpenWebUI API query');
     }
+    
+    // Log the headers and URL for debugging
+    console.log('Query URL:', queryUrl);
+    console.log('Request headers:', JSON.stringify(headers));
     
     const response = await fetch(queryUrl, {
       method: 'GET',

@@ -32,6 +32,7 @@ export const getOpenWebUIUrl = () => {
  * @returns {string} The OpenWebUI token
  */
 export const getOpenWebUIToken = () => {
+  console.log('Getting OpenWebUI token:', OPENWEBUI_CONFIG.token ? 'Token exists' : 'No token found');
   return OPENWEBUI_CONFIG.token;
 };
 
