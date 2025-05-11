@@ -383,20 +383,31 @@ export class PipelineExecutor {
       console.log(`Starting LLM call ${callId}`);
       
       // Add a system prompt to encourage detailed responses
-      const enhancedPrompt = `# DETAILED ANSWER REQUIRED
+      const enhancedPrompt = `# EXPERT ANSWER REQUIRED
 
 ## Question
 ${typeof inputText === 'string' ? inputText : String(inputText)}
 
 ## Instructions
-Please provide a comprehensive, detailed answer to this question. Include:
-- Thorough explanations of concepts
-- Specific examples where relevant
-- Multiple perspectives if applicable
-- Clear organization with logical flow
-- Accurate and precise information
+You are a subject matter expert tasked with providing a comprehensive, detailed answer to this question. Your response must be:
 
-Your response should be informative, well-structured, and demonstrate deep understanding of the topic.`;
+1. EXTREMELY THOROUGH - Cover all aspects of the topic in depth
+2. WELL-STRUCTURED - Use clear organization with logical flow
+3. DETAILED - Include specific facts, examples, and explanations
+4. EDUCATIONAL - Explain concepts clearly as if teaching the topic
+5. ACCURATE - Provide precise, factual information
+6. COMPREHENSIVE - Aim for at least 300-500 words to fully address the question
+
+Your goal is to create a response that would be suitable for an educational textbook or scholarly article on this topic. Do not leave any important aspects unexplained.
+
+## Response Format
+Structure your answer with:
+- A clear introduction explaining the topic
+- Multiple paragraphs covering different aspects
+- Specific examples and details
+- A conclusion summarizing key points
+
+Begin your response immediately with the comprehensive answer:`;
       
       const response = await callLLM({
         model: node.params.model || "phi:latest", // Use a default model if none specified

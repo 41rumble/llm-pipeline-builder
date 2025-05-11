@@ -33,9 +33,12 @@ export const generateText = async (model, prompt, options = {}) => {
       stream: false,
       options: {
         temperature: options.temperature || 0.7,
-        num_predict: options.max_tokens || 1000
+        num_predict: options.max_tokens || 4000
       }
     };
+    
+    console.log(`Ollama request options: temperature=${options.temperature}, max_tokens=${options.max_tokens}`);
+    console.log(`Using num_predict=${generateRequest.options.num_predict}`);
     
     console.log(`Connecting to Ollama at ${OLLAMA_SERVER_URL}/api/generate`);
     
