@@ -24,7 +24,23 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
     
     // Set the new node data
     if (selectedNode) {
-      setNodeData({ ...selectedNode });
+      // Ensure the node has a params object
+      const nodeWithParams = { 
+        ...selectedNode,
+        params: selectedNode.params || {}
+      };
+      
+      // For RAG nodes, ensure they have an openwebui object
+      if (selectedNode.type === 'rag' && !nodeWithParams.params.openwebui) {
+        nodeWithParams.params.openwebui = {
+          url: "http://localhost:8080",
+          knowledgeBase: "",
+          topK: 5,
+          minScore: 0.7
+        };
+      }
+      
+      setNodeData(nodeWithParams);
     } else {
       setNodeData(null);
     }

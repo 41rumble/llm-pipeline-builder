@@ -30,18 +30,20 @@ export const RAGNodeDef = {
   type: "rag",
   input: ["text"],
   output: ["text"],
-  openwebui: {
-    url: "http://localhost:8080",
-    knowledgeBase: "",
-    topK: 5,
-    minScore: 0.7
-  },
-  template: `{{query}}
+  params: {
+    openwebui: {
+      url: "http://localhost:8080",
+      knowledgeBase: "",
+      topK: 5,
+      minScore: 0.7
+    },
+    template: `{{query}}
 
 {{#if context}}
 Context information:
 {{context}}
-{{/if}}`,
+{{/if}}`
+  },
   description: "Retrieves relevant documents from OpenWebUI knowledge bases and adds them as context"
 };
 

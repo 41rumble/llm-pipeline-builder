@@ -20,8 +20,15 @@ const KnowledgeBaseSelector = ({ value, onChange, serverUrl }) => {
     setError(null);
 
     try {
+      console.log(`Fetching knowledge bases from ${serverUrl}...`);
       const bases = await getKnowledgeBases(serverUrl);
+      console.log(`Fetched ${bases.length} knowledge bases:`, bases);
       setKnowledgeBases(bases);
+      
+      // If we have a selected value but it's not in the fetched bases, log a warning
+      if (value && !bases.some(kb => kb.id === value)) {
+        console.warn(`Selected knowledge base "${value}" not found in fetched bases`);
+      }
     } catch (err) {
       console.error('Error fetching knowledge bases:', err);
       setError('Failed to fetch knowledge bases. Please check the server URL and try again.');

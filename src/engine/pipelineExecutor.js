@@ -367,7 +367,7 @@ export class PipelineExecutor {
    * Execute a RAG node
    */
   async executeRAGNode(node, context) {
-    console.log(`Executing RAG node with knowledge base: ${node.params.openwebui?.knowledgeBase}`);
+    console.log(`Executing RAG node with knowledge base: ${node.params?.openwebui?.knowledgeBase}`);
     
     // Get the input text
     const inputText = typeof context.currentInput === 'string' 
@@ -377,11 +377,11 @@ export class PipelineExecutor {
     // Query the knowledge base
     try {
       // Check if we have the required configuration
-      if (!node.params.openwebui || !node.params.openwebui.knowledgeBase) {
+      if (!node.params?.openwebui || !node.params.openwebui.knowledgeBase) {
         console.warn("RAG node is missing OpenWebUI configuration or knowledge base");
         
         // Compile the template without context
-        const template = Handlebars.compile(node.params.template);
+        const template = Handlebars.compile(node.params.template || '{{query}}');
         const templateVars = {
           query: inputText,
           ...context.nodeResults
@@ -402,7 +402,7 @@ export class PipelineExecutor {
       console.log(`RAG query returned ${ragResults.results.length} results`);
       
       // Compile the template with the context
-      const template = Handlebars.compile(node.params.template);
+      const template = Handlebars.compile(node.params.template || '{{query}}\n\n{{#if context}}Context information:\n{{context}}{{/if}}');
       const templateVars = {
         query: inputText,
         context: ragResults.context,
