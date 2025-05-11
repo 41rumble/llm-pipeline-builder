@@ -40,7 +40,7 @@ export const exportToJSON = (nodes, edges) => {
 export const exportToOpenWebUI = (nodes, edges) => {
   // First convert to our internal pipeline format
   const pipeline = exportToJSON(nodes, edges);
-  
+
   // Convert to OpenWebUI Pipelines format
   // Based on the OpenWebUI Pipelines documentation
   const openWebUIPipeline = {
@@ -63,7 +63,7 @@ export const exportToOpenWebUI = (nodes, edges) => {
     version: "1.0",
     format: "openwebui-pipeline"
   };
-  
+
   return openWebUIPipeline;
 };
 
@@ -76,7 +76,7 @@ export const exportToOpenWebUI = (nodes, edges) => {
  */
 export const downloadPipelineAsJSON = (nodes, edges, format = 'default', filename = 'pipeline.json') => {
   let pipelineData;
-  
+
   if (format === 'openwebui') {
     pipelineData = exportToOpenWebUI(nodes, edges);
     filename = filename || 'openwebui_pipeline.json';
@@ -84,17 +84,17 @@ export const downloadPipelineAsJSON = (nodes, edges, format = 'default', filenam
     pipelineData = exportToJSON(nodes, edges);
     filename = filename || 'pipeline.json';
   }
-  
+
   const json = JSON.stringify(pipelineData, null, 2);
   const blob = new Blob([json], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
-  
+
   const a = document.createElement('a');
   a.href = url;
   a.download = filename;
   document.body.appendChild(a);
   a.click();
-  
+
   // Clean up
   setTimeout(() => {
     document.body.removeChild(a);
@@ -104,30 +104,38 @@ export const downloadPipelineAsJSON = (nodes, edges, format = 'default', filenam
 
 /**
  * Imports a pipeline JSON back to React Flow format
+ * @param {Object} pipeline - The pipeline configuration
+ * @returns {Object} - The React Flow nodes and edges
  */
 export const importFromJSON = (pipeline) => {
   // Convert pipeline nodes to React Flow nodes
-  const nodes = pipeline.nodes.map((node) => ({
-    id: node.id,
-    type: 'default',
-    position: { x: 0, y: 0 }, // Positions will need to be calculated or stored
-    data: {
-      label: node.type.charAt(0).toUpperCase() + node.type.slice(1),
-      type: node.type,
-      params: node.params,
-    },
-  }));
+  const nodes = pipeline.nodes.map((node) => {
+    // Create a React Flow node
+    return {
+      id: node.id,
+      type: 'default',
+      position: node.position || { x: 0, y: 0 },
+      data: {
+        label: node.label || node.type,
+        type: node.type,
+        params: node.params || {}
+      }
+    };
+  });
 
   // Convert pipeline edges to React Flow edges
-  const edges = pipeline.edges.map((edge) => ({
-    id: `${edge.source}-${edge.target}`,
-    source: edge.source,
-    target: edge.target,
-    sourceHandle: edge.sourceHandle,
-    targetHandle: edge.targetHandle,
-    type: 'smoothstep',
-    animated: true,
-  }));
+  const edges = pipeline.edges.map((edge) => {
+    // Create a React Flow edge
+    return {
+      id: edge.id || `edge-${edge.source}-${edge.target}`,
+      source: edge.source,
+      target: edge.target,
+      sourceHandle: edge.sourceHandle,
+      targetHandle: edge.targetHandle,
+      type: 'smoothstep',
+      animated: true
+    };
+  });
 
   return { nodes, edges };
 };
