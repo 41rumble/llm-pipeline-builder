@@ -3,6 +3,7 @@ import FlowCanvas from './components/FlowCanvas';
 import { PipelineExecutor } from './engine/pipelineExecutor';
 import { registerHandlebarsHelpers } from './utils/handlebarsHelpers';
 import DebugPanel from './components/DebugPanel';
+import TokenInput from './components/TokenInput';
 import './styles/dark-theme.css';
 
 // Register Handlebars helpers
@@ -143,6 +144,9 @@ function App() {
       
       {/* Add the debug panel */}
       {import.meta.env.DEV && <DebugPanel />}
+      
+      {/* Add the token input */}
+      <TokenInput />
     </div>
   );
 }
