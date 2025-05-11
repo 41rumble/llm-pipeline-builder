@@ -2,6 +2,7 @@ import { topologicalSort } from './topologicalSort';
 import { callLLM } from './llmService';
 import { parseResponseForFanOut } from './responseParser';
 import { queryKnowledgeBase } from './openwebuiService';
+import { getOpenWebUIToken } from '../utils/config';
 import Handlebars from 'handlebars';
 
 /**
@@ -367,7 +368,8 @@ export class PipelineExecutor {
    * Execute a RAG node
    */
   async executeRAGNode(node, context) {
-    console.log(`Executing RAG node with knowledge base: ${node.params?.openwebui?.knowledgeBase}`);
+    const knowledgeBases = node.params?.openwebui?.knowledgeBases || [];
+    console.log(`Executing RAG node with knowledge bases: ${JSON.stringify(knowledgeBases)}`);
     
     // Get the input text
     const inputText = typeof context.currentInput === 'string' 
@@ -402,7 +404,9 @@ export class PipelineExecutor {
           knowledgeBase: knowledgeBase,
           query: inputText,
           topK: node.params.openwebui.topK || 5,
-          minScore: node.params.openwebui.minScore || 0.7
+          minScore: node.params.openwebui.minScore || 0.7,
+          // Explicitly pass the token from environment variables
+          token: getOpenWebUIToken()
         });
         
         // Add results to the combined results

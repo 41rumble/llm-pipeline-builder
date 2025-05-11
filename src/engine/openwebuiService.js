@@ -75,10 +75,13 @@ export const queryKnowledgeBase = async (options) => {
       minScore = 0.7 
     } = options;
     
+    // Ensure query is a string
+    const queryString = typeof query === 'string' ? query : JSON.stringify(query);
+    
     // Construct the query URL
     const queryParams = new URLSearchParams({
       collection_id: knowledgeBase,  // Use collection_id instead of collection_name
-      query: query,
+      query: queryString,
       top_k: topK,
       threshold: minScore
     });

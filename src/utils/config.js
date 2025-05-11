@@ -34,6 +34,7 @@ export const getOpenWebUIUrl = () => {
 export const getOpenWebUIToken = () => {
   // First check if we have a token in the window object (set by TokenInput component)
   if (typeof window !== 'undefined' && window.OPENWEBUI_TOKEN) {
+    console.log('Using token from window.OPENWEBUI_TOKEN');
     return window.OPENWEBUI_TOKEN;
   }
   
@@ -41,11 +42,13 @@ export const getOpenWebUIToken = () => {
   if (typeof window !== 'undefined' && window.localStorage) {
     const token = window.localStorage.getItem('openwebui_token');
     if (token) {
+      console.log('Using token from localStorage');
       return token;
     }
   }
   
   // Finally, fall back to the environment variable
+  console.log('Using token from environment variable:', OPENWEBUI_CONFIG.token ? 'Token exists' : 'No token found');
   return OPENWEBUI_CONFIG.token;
 };
 
