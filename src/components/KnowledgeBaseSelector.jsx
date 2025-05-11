@@ -70,26 +70,61 @@ const KnowledgeBaseSelector = ({ value, onChange, multiple = false }) => {
       <div className="kb-selector-header">
         {multiple ? (
           <div>
-            <div style={{ marginBottom: '8px', fontWeight: 'bold' }}>
-              Select Knowledge Bases (hold Ctrl/Cmd to select multiple):
+            <div style={{ marginBottom: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontWeight: 'bold' }}>Select Knowledge Bases:</span>
+                <button 
+                  className="btn btn-sm btn-outline-secondary" 
+                  onClick={fetchKnowledgeBases}
+                  disabled={loading}
+                  title="Refresh knowledge bases"
+                  style={{ marginLeft: '8px' }}
+                >
+                  {loading ? 'Loading...' : 'Refresh'}
+                </button>
+              </div>
+              <div style={{ fontSize: '0.8em', color: '#999', marginTop: '2px' }}>
+                Hold Ctrl/Cmd to select multiple or click and drag
+              </div>
             </div>
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div>
               <select 
                 className="form-control" 
                 value={selectedValues} 
                 onChange={handleChange}
                 disabled={loading}
-                style={{ flexGrow: 1 }}
+                style={{ 
+                  width: '100%',
+                  backgroundColor: '#222',
+                  color: 'white',
+                  border: '1px solid #444',
+                  borderRadius: '4px',
+                  padding: '8px'
+                }}
                 multiple={true}
-                size={Math.min(5, knowledgeBases.length || 5)}
+                size={Math.min(6, Math.max(3, knowledgeBases.length))}
               >
                 {knowledgeBases.map((kb) => (
-                  <option key={kb.id} value={kb.id}>
+                  <option 
+                    key={kb.id} 
+                    value={kb.id}
+                    style={{
+                      padding: '6px 8px',
+                      marginBottom: '2px',
+                      borderRadius: '2px',
+                      backgroundColor: selectedValues.includes(kb.id) ? '#2a4d69' : 'transparent'
+                    }}
+                  >
                     {kb.name} ({kb.documentCount} docs)
                   </option>
                 ))}
               </select>
-              
+            </div>
+          </div>
+        ) : (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <span style={{ fontWeight: 'bold' }}>Select Knowledge Base:</span>
               <button 
                 className="btn btn-sm btn-outline-secondary" 
                 onClick={fetchKnowledgeBases}
@@ -99,15 +134,19 @@ const KnowledgeBaseSelector = ({ value, onChange, multiple = false }) => {
                 {loading ? 'Loading...' : 'Refresh'}
               </button>
             </div>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', gap: '8px' }}>
             <select 
               className="form-control" 
               value={selectedValues[0] || ''} 
               onChange={handleChange}
               disabled={loading}
-              style={{ flexGrow: 1 }}
+              style={{ 
+                width: '100%',
+                backgroundColor: '#222',
+                color: 'white',
+                border: '1px solid #444',
+                borderRadius: '4px',
+                padding: '8px'
+              }}
             >
               <option value="">Select a knowledge base</option>
               {knowledgeBases.map((kb) => (
@@ -117,14 +156,11 @@ const KnowledgeBaseSelector = ({ value, onChange, multiple = false }) => {
               ))}
             </select>
             
-            <button 
-              className="btn btn-sm btn-outline-secondary" 
-              onClick={fetchKnowledgeBases}
-              disabled={loading}
-              title="Refresh knowledge bases"
-            >
-              {loading ? 'Loading...' : 'Refresh'}
-            </button>
+            {selectedValues[0] && (
+              <div style={{ marginTop: '8px', fontSize: '0.9em', color: '#aaa' }}>
+                {knowledgeBases.find(kb => kb.id === selectedValues[0])?.description || ''}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -141,26 +177,45 @@ const KnowledgeBaseSelector = ({ value, onChange, multiple = false }) => {
         </div>
       )}
       
-      {selectedValues.length > 0 && (
+      {selectedValues.length > 0 && multiple && (
         <div className="selected-knowledge-bases" style={{ marginTop: '8px' }}>
           <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
             Selected Knowledge Bases:
           </div>
-          <ul style={{ margin: 0, paddingLeft: '20px' }}>
+          <div style={{ 
+            backgroundColor: '#222', 
+            padding: '8px', 
+            borderRadius: '4px',
+            maxHeight: '120px',
+            overflowY: 'auto'
+          }}>
             {selectedValues.map(id => {
               const kb = knowledgeBases.find(kb => kb.id === id);
               return (
-                <li key={id} style={{ marginBottom: '2px' }}>
-                  <span style={{ fontWeight: 'bold' }}>{kb?.name || id}</span>
-                  {kb?.description && (
-                    <span style={{ fontStyle: 'italic', color: '#666', marginLeft: '4px' }}>
-                      - {kb.description}
+                <div key={id} style={{ 
+                  marginBottom: '4px', 
+                  padding: '4px 8px',
+                  backgroundColor: '#333',
+                  borderRadius: '3px',
+                  display: 'flex',
+                  alignItems: 'center'
+                }}>
+                  <span style={{ fontWeight: 'bold' }}>{kb?.name || 'Unknown KB'}</span>
+                  {kb?.documentCount !== undefined && (
+                    <span style={{ 
+                      marginLeft: '8px', 
+                      fontSize: '0.8em', 
+                      backgroundColor: '#444',
+                      padding: '2px 6px',
+                      borderRadius: '10px'
+                    }}>
+                      {kb.documentCount} docs
                     </span>
                   )}
-                </li>
+                </div>
               );
             })}
-          </ul>
+          </div>
         </div>
       )}
     </div>
