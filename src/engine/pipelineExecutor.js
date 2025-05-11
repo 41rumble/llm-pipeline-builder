@@ -143,7 +143,8 @@ export class PipelineExecutor {
     
     // Check if this node has fan-out enabled
     if (node.params.fanOut && Array.isArray(result)) {
-      console.log(`Node ${nodeId} is fanning out with ${result.length} items`);
+      console.log(`Node ${nodeId} (${node.type}) is fanning out with ${result.length} items`);
+      console.log(`Fan-out items: ${result.map(item => typeof item === 'string' ? item.substring(0, 50) + '...' : JSON.stringify(item).substring(0, 50) + '...').join(' | ')}`);
       
       // For each downstream node, we need to track fan-out completion
       for (const targetId of downstreamNodeIds) {
@@ -153,6 +154,7 @@ export class PipelineExecutor {
             received: 0,
             results: []
           };
+          console.log(`Set up fan-out tracking for node ${targetId}, expecting ${result.length} results`);
         }
       }
       
@@ -163,7 +165,10 @@ export class PipelineExecutor {
           currentInput: result[i]
         };
         
+        console.log(`Creating fan-out context for item ${i+1}/${result.length}: ${typeof result[i] === 'string' ? result[i].substring(0, 50) + '...' : JSON.stringify(result[i]).substring(0, 50) + '...'}`);
+        
         for (const targetId of downstreamNodeIds) {
+          console.log(`Queueing fan-out item ${i+1} for node ${targetId}`);
           this.queue.push({
             nodeId: targetId,
             context: itemContext
@@ -179,14 +184,19 @@ export class PipelineExecutor {
           tracking.results.push(result);
           tracking.received++;
           
+          console.log(`Fan-in progress for node ${targetId}: received ${tracking.received}/${tracking.expected} results`);
+          
           // If we've received all expected fan-out results, process the node with the collected results
           if (tracking.received === tracking.expected) {
             console.log(`Fan-in complete for node ${targetId} with ${tracking.results.length} results`);
+            console.log(`Fan-in results: ${tracking.results.map(item => typeof item === 'string' ? item.substring(0, 50) + '...' : JSON.stringify(item).substring(0, 50) + '...').join(' | ')}`);
             
             const fanInContext = {
               nodeResults: { ...context.nodeResults },
               currentInput: tracking.results
             };
+            
+            console.log(`Creating fan-in context for node ${targetId} with ${tracking.results.length} items`);
             
             this.queue.push({
               nodeId: targetId,
@@ -198,6 +208,7 @@ export class PipelineExecutor {
           }
         } else {
           // Regular execution
+          console.log(`Regular (non-fan) execution for node ${targetId}`);
           this.queue.push({
             nodeId: targetId,
             context: updatedContext
@@ -261,16 +272,15 @@ export class PipelineExecutor {
   async executeLLMNode(node, context) {
     console.log(`Executing LLM node with model: ${node.params.model}`);
     
-    // Make sure we have a valid input
-    const inputText = typeof context.currentInput === 'string' 
-      ? context.currentInput 
-      : JSON.stringify(context.currentInput);
+    // Handle input properly - don't stringify arrays as we want to process each item individually
+    // when they come from a fan-out operation
+    const inputText = context.currentInput;
     
     // Call the LLM with the input as the prompt
     try {
       const response = await callLLM({
         model: node.params.model || "phi:latest", // Use a default model if none specified
-        prompt: inputText,
+        prompt: typeof inputText === 'string' ? inputText : String(inputText),
         temperature: node.params.temperature,
         max_tokens: node.params.max_tokens
       });
@@ -294,6 +304,16 @@ export class PipelineExecutor {
       ? context.currentInput 
       : [context.currentInput];
     
+    // Find the original query from the input node if available
+    let originalQuery = null;
+    const inputNodeResults = Object.entries(context.nodeResults)
+      .find(([id, result]) => this.nodeMap.get(id)?.type === 'input');
+    
+    if (inputNodeResults) {
+      originalQuery = inputNodeResults[1];
+      console.log(`Found original query: ${originalQuery}`);
+    }
+    
     // Compile the template with Handlebars
     const template = Handlebars.compile(node.params.template);
     
@@ -301,6 +321,8 @@ export class PipelineExecutor {
     const templateVars = {
       text: inputs.join('\n\n'),
       items: inputs,
+      originalQuery: originalQuery,
+      query: originalQuery, // For backward compatibility
       ...context.nodeResults
     };
     

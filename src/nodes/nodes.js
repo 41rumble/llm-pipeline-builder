@@ -13,14 +13,14 @@ export const PromptNodeDef = {
   type: "prompt",
   input: ["text"],
   output: ["text_list"],
-  template: "Break this into 5 questions:\n\n{{query}}",
+  template: "Generate 5 detailed questions about the following topic. Return each question as a separate item in a JSON array:\n\n{{query}}",
   llm: {
     model: "gpt-4",
     format: "json_array"
   },
   parser: "json_array",
   fanOut: true,
-  description: "Formats input into a prompt template and sends to LLM"
+  description: "Formats input into a prompt template, generates multiple questions, and fans out to downstream nodes"
 };
 
 export const LLMNodeDef = {
@@ -41,13 +41,13 @@ export const SummarizerNodeDef = {
   type: "summarizer",
   input: ["text_list"],
   output: ["text"],
-  template: "Given the following information, provide a concise summary:\n\n{{text}}",
+  template: "The original query was: {{originalQuery}}\n\nBased on the following responses to questions about this query, provide a comprehensive answer that synthesizes all the information:\n\n{{text}}",
   llm: {
     model: "gpt-4",
     temperature: 0.3,
     max_tokens: 500
   },
-  description: "Aggregates multiple inputs and generates a summary"
+  description: "Aggregates multiple inputs and generates a summary with the original query as context"
 };
 
 export const OutputNodeDef = {
