@@ -568,10 +568,13 @@ Begin your expert response now:`;
       console.log(response.text);
       
       // Check if the response looks like it might be truncated or just a conclusion
-      if (response.text.length < 200 || 
-          response.text.includes("I hope this") || 
-          response.text.includes("Thank you") ||
-          response.text.includes("Do you have any other questions")) {
+      // Only flag very short responses or those that are clearly just conclusions
+      if ((response.text.length < 100 && 
+           (response.text.includes("I hope this") || 
+            response.text.includes("Thank you") || 
+            response.text.includes("Do you have any other questions") ||
+            response.text.includes("As an AI"))) ||
+          (response.text.length < 50)) {
         console.log("WARNING: Summarizer response appears to be truncated or incomplete!");
         
         // Create a more explicit error message to return instead
@@ -585,6 +588,38 @@ This might be due to:
 3. Response truncation issues
 
 Please try again with a different query or check the model settings.`;
+      }
+      
+      // Log whether the response contains certain phrases that might indicate it's not addressing the query directly
+      if (response.text.includes("As an AI") || 
+          response.text.includes("language model") ||
+          response.text.includes("I cannot provide")) {
+        console.log("WARNING: Response contains AI self-references. Attempting to clean up...");
+        
+        // Clean up AI self-references
+        let cleanedText = response.text;
+        
+        // Replace common AI self-reference phrases
+        const replacements = [
+          { from: "As an AI language model", to: "As a researcher" },
+          { from: "As an AI", to: "As a researcher" },
+          { from: "I'm an AI", to: "Based on the research" },
+          { from: "I am an AI", to: "Based on the research" },
+          { from: "I cannot provide", to: "The research indicates" },
+          { from: "I don't have access to", to: "The available information on" },
+          { from: "my training data", to: "the research literature" },
+          { from: "my knowledge", to: "the research" }
+        ];
+        
+        for (const { from, to } of replacements) {
+          cleanedText = cleanedText.replace(new RegExp(from, 'gi'), to);
+        }
+        
+        // If we made changes, use the cleaned text
+        if (cleanedText !== response.text) {
+          console.log("Cleaned up AI self-references in the response.");
+          return cleanedText;
+        }
       }
       
       return response.text;
