@@ -4,7 +4,7 @@ import { getKnowledgeBases } from '../engine/openwebuiService';
 /**
  * Component for selecting knowledge bases from OpenWebUI
  */
-const KnowledgeBaseSelector = ({ value, onChange, serverUrl }) => {
+const KnowledgeBaseSelector = ({ value, onChange, serverUrl, token = '' }) => {
   const [knowledgeBases, setKnowledgeBases] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -21,7 +21,7 @@ const KnowledgeBaseSelector = ({ value, onChange, serverUrl }) => {
 
     try {
       console.log(`Fetching knowledge bases from ${serverUrl}...`);
-      const bases = await getKnowledgeBases(serverUrl);
+      const bases = await getKnowledgeBases(serverUrl, token);
       console.log(`Fetched ${bases.length} knowledge bases:`, bases);
       setKnowledgeBases(bases);
       

@@ -5,17 +5,25 @@
 /**
  * Get available knowledge bases from OpenWebUI
  * @param {string} baseUrl - The base URL of the OpenWebUI instance
+ * @param {string} token - Authentication token (optional)
  * @returns {Promise<Array>} - Array of knowledge base objects
  */
-export const getKnowledgeBases = async (baseUrl) => {
+export const getKnowledgeBases = async (baseUrl, token = '') => {
   try {
     console.log(`Fetching knowledge bases from OpenWebUI at ${baseUrl}/api/v1/knowledge/`);
     
+    // Prepare headers with authentication if token is provided
+    const headers = {
+      'Accept': 'application/json'
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
     const response = await fetch(`${baseUrl}/api/v1/knowledge/`, {
       method: 'GET',
-      headers: {
-        'Accept': 'application/json'
-      }
+      headers
     });
     
     if (!response.ok) {
@@ -53,6 +61,7 @@ export const getKnowledgeBases = async (baseUrl) => {
  * Query a knowledge base for relevant documents
  * @param {Object} options - Query options
  * @param {string} options.baseUrl - The base URL of the OpenWebUI instance
+ * @param {string} options.token - Authentication token (optional)
  * @param {string} options.knowledgeBase - The ID or name of the knowledge base
  * @param {string} options.query - The query text
  * @param {number} options.topK - Number of results to return
@@ -61,7 +70,7 @@ export const getKnowledgeBases = async (baseUrl) => {
  */
 export const queryKnowledgeBase = async (options) => {
   try {
-    const { baseUrl, knowledgeBase, query, topK = 5, minScore = 0.7 } = options;
+    const { baseUrl, token = '', knowledgeBase, query, topK = 5, minScore = 0.7 } = options;
     
     console.log(`Querying OpenWebUI knowledge base "${knowledgeBase}" with: ${query}`);
     
@@ -76,11 +85,19 @@ export const queryKnowledgeBase = async (options) => {
     const queryUrl = `${baseUrl}/api/v1/knowledge/query?${queryParams.toString()}`;
     console.log(`Query URL: ${queryUrl}`);
     
+    // Prepare headers with authentication if token is provided
+    const headers = {
+      'Accept': 'application/json'
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+      console.log('Using authentication token for request');
+    }
+    
     const response = await fetch(queryUrl, {
       method: 'GET',
-      headers: {
-        'Accept': 'application/json'
-      }
+      headers
     });
     
     if (!response.ok) {
