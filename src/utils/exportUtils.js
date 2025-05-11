@@ -7,10 +7,13 @@ export const exportToJSON = (nodes, edges) => {
     id: node.id,
     type: node.data.type,
     params: node.data.params,
+    position: { x: node.position.x, y: node.position.y },
+    label: node.data.label || node.data.type
   }));
 
   // Convert edges to pipeline format
   const pipelineEdges = edges.map((edge) => ({
+    id: edge.id,
     source: edge.source,
     target: edge.target,
     sourceHandle: edge.sourceHandle,
@@ -18,9 +21,68 @@ export const exportToJSON = (nodes, edges) => {
   }));
 
   return {
+    id: `pipeline_${Date.now()}`,
+    name: "Pipeline",
+    description: "Pipeline created with LLM Pipeline Builder",
     nodes: pipelineNodes,
     edges: pipelineEdges,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
   };
+};
+
+/**
+ * Export a pipeline configuration to OpenWebUI compatible format
+ * @param {Array} nodes - The React Flow nodes
+ * @param {Array} edges - The React Flow edges
+ * @returns {Object} - OpenWebUI compatible pipeline configuration
+ */
+export const exportToOpenWebUI = (nodes, edges) => {
+  // First convert to our internal pipeline format
+  const pipeline = exportToJSON(nodes, edges);
+  
+  // Then convert to OpenWebUI format
+  // This is a placeholder - the actual format will depend on OpenWebUI's requirements
+  return {
+    ...pipeline,
+    version: "1.0",
+    format: "openwebui"
+  };
+};
+
+/**
+ * Download a pipeline configuration as a JSON file
+ * @param {Array} nodes - The React Flow nodes
+ * @param {Array} edges - The React Flow edges
+ * @param {string} format - The export format ('default' or 'openwebui')
+ * @param {string} filename - The name of the file to download
+ */
+export const downloadPipelineAsJSON = (nodes, edges, format = 'default', filename = 'pipeline.json') => {
+  let pipelineData;
+  
+  if (format === 'openwebui') {
+    pipelineData = exportToOpenWebUI(nodes, edges);
+    filename = filename || 'openwebui_pipeline.json';
+  } else {
+    pipelineData = exportToJSON(nodes, edges);
+    filename = filename || 'pipeline.json';
+  }
+  
+  const json = JSON.stringify(pipelineData, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  
+  // Clean up
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 0);
 };
 
 /**

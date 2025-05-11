@@ -19,7 +19,7 @@ import NodeConfigPanel from './NodeConfigPanel';
 import NodeTypeDebugger from './NodeTypeDebugger';
 import NavigationHUD from './NavigationHUD';
 import nodeRegistry, { getAllNodeDefs } from '../utils/nodeRegistry';
-import { exportToJSON } from '../utils/exportUtils';
+import { exportToJSON, downloadPipelineAsJSON } from '../utils/exportUtils';
 
 // Define the node types for React Flow
 const nodeTypes = {
@@ -289,17 +289,14 @@ const FlowCanvas = ({ onExecute }) => {
 
   // Export the current flow to JSON
   const handleExportFlow = () => {
-    const jsonData = exportToJSON(nodes, edges);
-    
-    // Create a blob and download link
-    const blob = new Blob([JSON.stringify(jsonData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'llm-pipeline.json';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    downloadPipelineAsJSON(nodes, edges, 'default', 'llm-pipeline.json');
+    console.log('Exported pipeline');
+  };
+  
+  // Export the flow to OpenWebUI format
+  const handleExportToOpenWebUI = () => {
+    downloadPipelineAsJSON(nodes, edges, 'openwebui', 'openwebui-pipeline.json');
+    console.log('Exported pipeline for OpenWebUI');
   };
   
   // Execute the current flow
@@ -434,6 +431,18 @@ const FlowCanvas = ({ onExecute }) => {
                     <path d="M12 15V3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
                   Export Pipeline
+                </button>
+                <button
+                  className="btn btn-info"
+                  onClick={handleExportToOpenWebUI}
+                  title="Export pipeline for OpenWebUI"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M7 10L12 15L17 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M12 15V3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  Export for OpenWebUI
                 </button>
               </div>
             </Panel>
