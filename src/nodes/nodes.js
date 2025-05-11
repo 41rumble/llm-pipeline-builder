@@ -25,6 +25,26 @@ Please return the questions as a JSON array.`,
   description: "Formats input into a prompt template, generates multiple questions, and fans out to downstream nodes"
 };
 
+export const RAGNodeDef = {
+  name: "RAGNode",
+  type: "rag",
+  input: ["text"],
+  output: ["text"],
+  openwebui: {
+    url: "http://localhost:8080",
+    knowledgeBase: "",
+    topK: 5,
+    minScore: 0.7
+  },
+  template: `{{query}}
+
+{{#if context}}
+Context information:
+{{context}}
+{{/if}}`,
+  description: "Retrieves relevant documents from OpenWebUI knowledge bases and adds them as context"
+};
+
 export const LLMNodeDef = {
   name: "LLMNode",
   type: "llm",

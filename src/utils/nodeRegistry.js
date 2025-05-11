@@ -1,7 +1,8 @@
 // Import node definitions from JavaScript file
 import { 
   InputNodeDef, 
-  PromptNodeDef, 
+  PromptNodeDef,
+  RAGNodeDef,
   LLMNodeDef, 
   SummarizerNodeDef, 
   OutputNodeDef 
@@ -11,6 +12,7 @@ import {
 const nodeRegistry = {
   [InputNodeDef.type]: InputNodeDef,
   [PromptNodeDef.type]: PromptNodeDef,
+  [RAGNodeDef.type]: RAGNodeDef,
   [LLMNodeDef.type]: LLMNodeDef,
   [SummarizerNodeDef.type]: SummarizerNodeDef,
   [OutputNodeDef.type]: OutputNodeDef,

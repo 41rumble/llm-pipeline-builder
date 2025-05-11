@@ -1,6 +1,7 @@
 import { topologicalSort } from './topologicalSort';
 import { callLLM } from './llmService';
 import { parseResponseForFanOut } from './responseParser';
+import { queryKnowledgeBase } from './openwebuiService';
 import Handlebars from 'handlebars';
 
 /**
@@ -125,6 +126,9 @@ export class PipelineExecutor {
         break;
       case 'prompt':
         result = await this.executePromptNode(node, context);
+        break;
+      case 'rag':
+        result = await this.executeRAGNode(node, context);
         break;
       case 'llm':
         result = await this.executeLLMNode(node, context);
@@ -357,6 +361,65 @@ export class PipelineExecutor {
     
     // If no LLM, just return the formatted prompt
     return prompt;
+  }
+  
+  /**
+   * Execute a RAG node
+   */
+  async executeRAGNode(node, context) {
+    console.log(`Executing RAG node with knowledge base: ${node.params.openwebui?.knowledgeBase}`);
+    
+    // Get the input text
+    const inputText = typeof context.currentInput === 'string' 
+      ? context.currentInput 
+      : String(context.currentInput);
+    
+    // Query the knowledge base
+    try {
+      // Check if we have the required configuration
+      if (!node.params.openwebui || !node.params.openwebui.knowledgeBase) {
+        console.warn("RAG node is missing OpenWebUI configuration or knowledge base");
+        
+        // Compile the template without context
+        const template = Handlebars.compile(node.params.template);
+        const templateVars = {
+          query: inputText,
+          ...context.nodeResults
+        };
+        
+        return template(templateVars);
+      }
+      
+      // Query the knowledge base
+      const ragResults = await queryKnowledgeBase({
+        baseUrl: node.params.openwebui.url || "http://localhost:8080",
+        knowledgeBase: node.params.openwebui.knowledgeBase,
+        query: inputText,
+        topK: node.params.openwebui.topK || 5,
+        minScore: node.params.openwebui.minScore || 0.7
+      });
+      
+      console.log(`RAG query returned ${ragResults.results.length} results`);
+      
+      // Compile the template with the context
+      const template = Handlebars.compile(node.params.template);
+      const templateVars = {
+        query: inputText,
+        context: ragResults.context,
+        results: ragResults.results,
+        ...context.nodeResults
+      };
+      
+      // Render the prompt with the context
+      const promptWithContext = template(templateVars);
+      
+      return promptWithContext;
+    } catch (error) {
+      console.error("Error in RAG node:", error);
+      
+      // Return the input without context if there's an error
+      return inputText;
+    }
   }
 
   /**
