@@ -475,7 +475,7 @@ export class PipelineExecutor {
         }
       }
       
-      return `EXPERT ANSWER ${index + 1}:\n${cleanedInput}`;
+      return `ANSWER ${index + 1}:\n${cleanedInput}`;
     });
     
     // Join all inputs with clear separation
