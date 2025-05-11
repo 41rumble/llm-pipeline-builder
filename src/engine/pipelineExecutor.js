@@ -553,12 +553,19 @@ Begin your expert response now:`;
     try {
       const callId = `summarizer-${node.id}-${Date.now().toString(36)}`;
       console.log(`Starting summarizer LLM call ${callId}`);
+      console.log(`Using model: ${node.params.llm?.model || "phi:latest"}, max_tokens: ${node.params.llm?.max_tokens || 8000}`);
+      
+      // Force a high max_tokens value for the summarizer to ensure comprehensive responses
+      const maxTokens = Math.max(node.params.llm?.max_tokens || 8000, 8000);
+      
+      // Add a note about the expected length to help the model
+      const enhancedPrompt = prompt + "\n\nNOTE: Your response should be at least 2000 words. Do not stop until you have completed all sections.";
       
       const response = await callLLM({
         model: node.params.llm?.model || "phi:latest", // Use a default model if none specified
-        prompt,
-        temperature: node.params.llm?.temperature,
-        max_tokens: node.params.llm?.max_tokens
+        prompt: enhancedPrompt,
+        temperature: node.params.llm?.temperature || 0.1, // Lower temperature for more focused responses
+        max_tokens: maxTokens
       });
       
       console.log(`Summarizer call ${callId} completed, response length: ${response.text.length}`);

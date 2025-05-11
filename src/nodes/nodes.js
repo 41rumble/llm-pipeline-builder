@@ -77,61 +77,71 @@ export const SummarizerNodeDef = {
   type: "summarizer",
   input: ["text_list"],
   output: ["text"],
-  template: `# DIRECT INSTRUCTION: YOU ARE A HUMAN EXPERT RESEARCHER
+  template: `# MANDATORY INSTRUCTIONS FOR DETAILED EDUCATIONAL ARTICLE
 
-You are a human expert researcher writing a comprehensive educational article directly answering this specific query:
+You are writing a detailed, comprehensive educational article for a prestigious academic publication. This is a MINIMUM 2000-WORD assignment that MUST be completed in full.
 
-## QUERY
+## TOPIC
 "{{originalQuery}}"
 
-## RESEARCH MATERIAL
-You have gathered the following expert information about this topic:
+## SOURCE MATERIAL
+You have access to the following expert information:
 
 {{text}}
 
-## YOUR TASK
-Write a comprehensive, detailed educational article that directly answers the query. Your article must:
+## CRITICAL REQUIREMENTS
+1. Your article MUST be EXTREMELY DETAILED - minimum 2000 words
+2. You MUST directly address "{{originalQuery}}" specifically
+3. You MUST include ALL relevant information from the source material
+4. You MUST add additional examples and explanations beyond the source material
+5. You MUST use proper academic structure with clear headings and subheadings
+6. You MUST write in an authoritative, educational tone
+7. You MUST include specific examples for each main point
+8. You MUST provide a thorough analysis of the topic
 
-1. DIRECTLY address the specific query about "{{originalQuery}}"
-2. Include ALL relevant information from the research material
-3. Be structured with clear headings and subheadings
-4. Be at least 1000 words in length
-5. Include specific examples, facts, and explanations
+## STRICT PROHIBITIONS
+- DO NOT write less than 2000 words
+- DO NOT identify yourself as AI, language model, or assistant
+- DO NOT apologize for limitations or lack of information
+- DO NOT use phrases like "I cannot provide" or "I don't have specific information"
+- DO NOT refer to "source material" or "expert answers" in your article
+- DO NOT end with questions for the reader
+- DO NOT provide a brief overview - this MUST be comprehensive
 
-## IMPORTANT REQUIREMENTS
-- You are writing as a human expert, NOT an AI
-- NEVER refer to yourself as an AI, language model, or assistant
-- NEVER say "I cannot provide" or "I don't have specific information"
-- NEVER apologize for limitations
-- NEVER mention that you're using "research material" or "expert answers"
-- If the research material doesn't fully address the query, use your expertise to provide a complete answer
-- Write in an authoritative, educational tone
-
-## ARTICLE FORMAT
-Your article must follow this structure:
+## REQUIRED ARTICLE STRUCTURE
+Your article MUST follow this exact structure:
 
 # {{originalQuery}}: A Comprehensive Analysis
 
-## Introduction
+## Introduction (250+ words)
 [Thorough introduction to the topic that directly addresses the query]
 
-## [First Main Section]
-[Detailed explanation with specific information]
+## Historical Context and Background (350+ words)
+[Detailed explanation of the historical development and background]
 
-## [Second Main Section]
-[Detailed explanation with specific information]
+## Key Examples and Case Studies (400+ words)
+[Specific examples and detailed case studies]
 
-## [Additional Sections as Needed]
-[Include all relevant information]
+## Scientific Understanding and Mechanisms (400+ words)
+[Detailed explanation of the scientific aspects and mechanisms]
 
-## Conclusion
-[Comprehensive summary]
+## Comparative Analysis (300+ words)
+[Compare and contrast different aspects or examples]
 
-BEGIN YOUR ARTICLE NOW:`,
+## Implications and Significance (300+ words)
+[Detailed discussion of the broader implications and significance]
+
+## Conclusion (200+ words)
+[Comprehensive summary of all key points]
+
+## References
+[List of theoretical references that would support this article]
+
+BEGIN YOUR COMPREHENSIVE 2000+ WORD ARTICLE NOW:`,
   llm: {
     model: "phi:latest",
     temperature: 0.1,
-    max_tokens: 4000
+    max_tokens: 8000
   },
   description: "Aggregates multiple inputs and generates a comprehensive synthesis with the original query as context"
 };
