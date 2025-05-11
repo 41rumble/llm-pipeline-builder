@@ -41,7 +41,21 @@ export const SummarizerNodeDef = {
   type: "summarizer",
   input: ["text_list"],
   output: ["text"],
-  template: "The original query was: {{originalQuery}}\n\nBased on the following responses to questions about this query, provide a comprehensive answer that synthesizes all the information:\n\n{{text}}",
+  template: `The original query was: {{originalQuery}}
+
+I have generated the following questions about this topic:
+{{#each sourceItems}}
+- {{this}}
+{{/each}}
+
+And here are the answers to these questions:
+{{#each items}}
+---
+{{this}}
+---
+{{/each}}
+
+Based on all of the above information, provide a comprehensive answer to the original query that synthesizes all the information. Make sure to address the key points from each answer.`,
   llm: {
     model: "gpt-4",
     temperature: 0.3,

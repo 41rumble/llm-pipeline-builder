@@ -165,42 +165,85 @@ export class PipelineExecutor {
       console.log(`Node ${nodeId} (${node.type}) is fanning out with ${result.length} items`);
       console.log(`Fan-out items: ${result.map(item => typeof item === 'string' ? item.substring(0, 50) + '...' : JSON.stringify(item).substring(0, 50) + '...').join(' | ')}`);
       
+      // Store the original array result
+      const originalResult = [...result];
+      
       // For each downstream node, we need to track fan-out completion
       for (const targetId of downstreamNodeIds) {
         if (!this.fanOutTracking[targetId]) {
           this.fanOutTracking[targetId] = {
             expected: result.length,
             received: 0,
-            results: []
+            results: [],
+            sourceNodeId: nodeId,
+            sourceNodeType: node.type
           };
-          console.log(`Set up fan-out tracking for node ${targetId}, expecting ${result.length} results`);
+          console.log(`Set up fan-out tracking for node ${targetId}, expecting ${result.length} results from ${node.type} node ${nodeId}`);
         }
       }
       
-      // Fan out to downstream nodes
+      // Fan out to downstream nodes - process each item individually
       for (let i = 0; i < result.length; i++) {
+        // Create a unique context for this item
         const itemContext = {
-          nodeResults: { ...context.nodeResults, [nodeId]: result[i] },
-          currentInput: result[i]
+          nodeResults: { 
+            ...context.nodeResults, 
+            [nodeId]: result[i],  // Store just this item as the node result
+            [`${nodeId}_original`]: originalResult  // Also store the original array
+          },
+          currentInput: result[i],  // Set the current input to just this item
+          fanOutIndex: i,  // Track which item in the fan-out this is
+          fanOutTotal: result.length,  // Track total items in fan-out
+          fanOutSourceNodeId: nodeId  // Track which node initiated the fan-out
         };
         
         console.log(`Creating fan-out context for item ${i+1}/${result.length}: ${typeof result[i] === 'string' ? result[i].substring(0, 50) + '...' : JSON.stringify(result[i]).substring(0, 50) + '...'}`);
         
+        // Queue this item for processing by each downstream node
         for (const targetId of downstreamNodeIds) {
-          console.log(`Queueing fan-out item ${i+1} for node ${targetId}`);
+          const targetNode = this.nodeMap.get(targetId);
+          console.log(`Queueing fan-out item ${i+1}/${result.length} for ${targetNode?.type} node ${targetId}`);
+          
           this.queue.push({
             nodeId: targetId,
             context: itemContext
           });
         }
       }
+      
+      // Also store the fan-out results in a special format in the results
+      this.results[`${nodeId}_fanout`] = result.map((item, index) => ({
+        index,
+        content: item
+      }));
+      
+      // Update the global results
+      window.pipelineResults[`${nodeId}_fanout`] = this.results[`${nodeId}_fanout`];
+      
+      // Emit an event for the fan-out results
+      const fanOutEvent = new CustomEvent('nodeFanOutResults', {
+        detail: { 
+          nodeId, 
+          results: this.results[`${nodeId}_fanout`] 
+        }
+      });
+      window.dispatchEvent(fanOutEvent);
     } else {
       // Regular (non-fan-out) execution flow
       for (const targetId of downstreamNodeIds) {
         // Check if this is part of a fan-in
         if (this.fanOutTracking[targetId]) {
           const tracking = this.fanOutTracking[targetId];
-          tracking.results.push(result);
+          
+          // Store the result with its fan-out index if available
+          if (context.fanOutIndex !== undefined) {
+            // If we have a fan-out index, store the result at that position
+            tracking.results[context.fanOutIndex] = result;
+          } else {
+            // Otherwise just push to the end
+            tracking.results.push(result);
+          }
+          
           tracking.received++;
           
           console.log(`Fan-in progress for node ${targetId}: received ${tracking.received}/${tracking.expected} results`);
@@ -210,13 +253,44 @@ export class PipelineExecutor {
             console.log(`Fan-in complete for node ${targetId} with ${tracking.results.length} results`);
             console.log(`Fan-in results: ${tracking.results.map(item => typeof item === 'string' ? item.substring(0, 50) + '...' : JSON.stringify(item).substring(0, 50) + '...').join(' | ')}`);
             
+            // Get the original node results from the source node if available
+            const sourceNodeResults = context.nodeResults[`${tracking.sourceNodeId}_original`] || [];
+            
             const fanInContext = {
-              nodeResults: { ...context.nodeResults },
-              currentInput: tracking.results
+              nodeResults: { 
+                ...context.nodeResults,
+                // Add the source node's original array if available
+                [tracking.sourceNodeId]: sourceNodeResults
+              },
+              currentInput: tracking.results,
+              fanInCompleted: true,
+              fanInSourceNodeId: tracking.sourceNodeId,
+              fanInSourceNodeType: tracking.sourceNodeType
             };
             
             console.log(`Creating fan-in context for node ${targetId} with ${tracking.results.length} items`);
             
+            // Store the fan-in results in a special format
+            const fanInResultsId = `${targetId}_fanin`;
+            this.results[fanInResultsId] = tracking.results.map((item, index) => ({
+              index,
+              content: item
+            }));
+            
+            // Update the global results
+            window.pipelineResults[fanInResultsId] = this.results[fanInResultsId];
+            
+            // Emit an event for the fan-in results
+            const fanInEvent = new CustomEvent('nodeFanInResults', {
+              detail: { 
+                nodeId: targetId, 
+                results: this.results[fanInResultsId],
+                sourceNodeId: tracking.sourceNodeId
+              }
+            });
+            window.dispatchEvent(fanInEvent);
+            
+            // Queue the node for processing with the collected results
             this.queue.push({
               nodeId: targetId,
               context: fanInContext
@@ -289,14 +363,25 @@ export class PipelineExecutor {
    * Execute an LLM node
    */
   async executeLLMNode(node, context) {
-    console.log(`Executing LLM node with model: ${node.params.model}`);
+    // Add more detailed logging to track fan-out processing
+    console.log(`Executing LLM node ${node.id} with model: ${node.params.model}`);
+    console.log(`LLM input type: ${typeof context.currentInput}`);
     
-    // Handle input properly - don't stringify arrays as we want to process each item individually
-    // when they come from a fan-out operation
+    if (typeof context.currentInput === 'object') {
+      console.log(`LLM input (object): ${JSON.stringify(context.currentInput).substring(0, 100)}...`);
+    } else {
+      console.log(`LLM input (first 100 chars): ${String(context.currentInput).substring(0, 100)}...`);
+    }
+    
+    // Get the input text, ensuring we handle it as a string
     const inputText = context.currentInput;
     
     // Call the LLM with the input as the prompt
     try {
+      // Create a unique identifier for this LLM call to track in logs
+      const callId = `llm-${node.id}-${Date.now().toString(36)}`;
+      console.log(`Starting LLM call ${callId}`);
+      
       const response = await callLLM({
         model: node.params.model || "phi:latest", // Use a default model if none specified
         prompt: typeof inputText === 'string' ? inputText : String(inputText),
@@ -304,7 +389,9 @@ export class PipelineExecutor {
         max_tokens: node.params.max_tokens
       });
       
-      console.log(`LLM response received, length: ${response.text.length}`);
+      console.log(`LLM call ${callId} completed, response length: ${response.text.length}`);
+      console.log(`LLM response (first 100 chars): ${response.text.substring(0, 100)}...`);
+      
       return response.text;
     } catch (error) {
       console.error("Error in LLM node:", error);
@@ -316,12 +403,15 @@ export class PipelineExecutor {
    * Execute a summarizer node
    */
   async executeSummarizerNode(node, context) {
-    console.log(`Executing summarizer node with model: ${node.params.llm?.model}`);
+    console.log(`Executing summarizer node ${node.id} with model: ${node.params.llm?.model}`);
+    console.log(`Summarizer context: fanInCompleted=${context.fanInCompleted}, fanInSourceNodeId=${context.fanInSourceNodeId}`);
     
     // Get the input (should be an array from fan-out)
     const inputs = Array.isArray(context.currentInput) 
       ? context.currentInput 
       : [context.currentInput];
+    
+    console.log(`Summarizer has ${inputs.length} inputs to process`);
     
     // Find the original query from the input node if available
     let originalQuery = null;
@@ -333,23 +423,40 @@ export class PipelineExecutor {
       console.log(`Found original query: ${originalQuery}`);
     }
     
+    // If we have a fan-in source node, get its original results
+    let sourceNodeResults = [];
+    if (context.fanInSourceNodeId) {
+      const sourceNodeId = context.fanInSourceNodeId;
+      // Try to get the original array from the source node
+      sourceNodeResults = context.nodeResults[sourceNodeId] || [];
+      console.log(`Found source node ${sourceNodeId} with ${Array.isArray(sourceNodeResults) ? sourceNodeResults.length : 0} results`);
+    }
+    
     // Compile the template with Handlebars
     const template = Handlebars.compile(node.params.template);
     
-    // Create template variables
+    // Create template variables with enhanced context
     const templateVars = {
       text: inputs.join('\n\n'),
       items: inputs,
       originalQuery: originalQuery,
       query: originalQuery, // For backward compatibility
+      sourceItems: sourceNodeResults, // Add the source node's original items
+      isFanIn: context.fanInCompleted || false,
+      fanInSourceType: context.fanInSourceNodeType,
       ...context.nodeResults
     };
     
     // Render the prompt
     const prompt = template(templateVars);
     
+    console.log(`Summarizer prompt (first 200 chars): ${prompt.substring(0, 200)}...`);
+    
     // Call the LLM
     try {
+      const callId = `summarizer-${node.id}-${Date.now().toString(36)}`;
+      console.log(`Starting summarizer LLM call ${callId}`);
+      
       const response = await callLLM({
         model: node.params.llm?.model || "phi:latest", // Use a default model if none specified
         prompt,
@@ -357,7 +464,9 @@ export class PipelineExecutor {
         max_tokens: node.params.llm?.max_tokens
       });
       
-      console.log(`Summarizer response received, length: ${response.text.length}`);
+      console.log(`Summarizer call ${callId} completed, response length: ${response.text.length}`);
+      console.log(`Summarizer response (first 100 chars): ${response.text.substring(0, 100)}...`);
+      
       return response.text;
     } catch (error) {
       console.error("Error in summarizer node:", error);
