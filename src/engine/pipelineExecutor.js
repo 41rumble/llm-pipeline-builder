@@ -377,14 +377,7 @@ export class PipelineExecutor {
     // Query the knowledge base
     try {
       // Check if we have the required configuration
-      // Support both old knowledgeBase and new knowledgeBases parameters
-      const oldKnowledgeBase = node.params?.openwebui?.knowledgeBase;
-      const newKnowledgeBases = node.params?.openwebui?.knowledgeBases || [];
-      
-      // Combine both sources, prioritizing the new format
-      const knowledgeBases = newKnowledgeBases.length > 0 
-        ? newKnowledgeBases 
-        : (oldKnowledgeBase ? [oldKnowledgeBase] : []);
+      const knowledgeBases = node.params?.openwebui?.knowledgeBases || [];
         
       if (!node.params?.openwebui || knowledgeBases.length === 0) {
         console.warn("RAG node is missing OpenWebUI configuration or knowledge bases");

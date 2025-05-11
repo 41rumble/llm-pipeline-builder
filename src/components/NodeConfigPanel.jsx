@@ -42,8 +42,8 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
           // Handle backward compatibility - convert old knowledgeBase to knowledgeBases array
           const oldValue = nodeWithParams.params.openwebui.knowledgeBase;
           nodeWithParams.params.openwebui.knowledgeBases = oldValue ? [oldValue] : [];
-          // Keep the old property for now to avoid breaking existing pipelines
-          // but we'll primarily use knowledgeBases going forward
+          // Remove the old property as we're now using knowledgeBases
+          delete nodeWithParams.params.openwebui.knowledgeBase;
         }
       }
       

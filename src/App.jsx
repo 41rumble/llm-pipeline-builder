@@ -2,7 +2,6 @@ import { useState } from 'react';
 import FlowCanvas from './components/FlowCanvas';
 import { PipelineExecutor } from './engine/pipelineExecutor';
 import { registerHandlebarsHelpers } from './utils/handlebarsHelpers';
-import TokenInput from './components/TokenInput';
 import './styles/dark-theme.css';
 
 // Register Handlebars helpers
@@ -140,9 +139,6 @@ function App() {
           <span>{isExecuting ? 'Executing pipeline...' : 'Ready'}</span>
         </div>
       </div>
-      
-      {/* Add the token input */}
-      <TokenInput />
     </div>
   );
 }
