@@ -2,7 +2,6 @@ import { useState } from 'react';
 import FlowCanvas from './components/FlowCanvas';
 import { PipelineExecutor } from './engine/pipelineExecutor';
 import { registerHandlebarsHelpers } from './utils/handlebarsHelpers';
-import DebugPanel from './components/DebugPanel';
 import TokenInput from './components/TokenInput';
 import './styles/dark-theme.css';
 
@@ -141,9 +140,6 @@ function App() {
           <span>{isExecuting ? 'Executing pipeline...' : 'Ready'}</span>
         </div>
       </div>
-      
-      {/* Add the debug panel */}
-      {import.meta.env.DEV && <DebugPanel />}
       
       {/* Add the token input */}
       <TokenInput />
