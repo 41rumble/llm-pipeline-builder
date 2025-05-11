@@ -45,8 +45,9 @@ export class PipelineExecutor {
     this.queue = [];
     this.fanOutTracking = {};
     
-    // Initialize global executing node ID
+    // Initialize global executing node ID and results
     window.executingNodeId = null;
+    window.pipelineResults = {};
     
     // Find input nodes (nodes with no incoming edges)
     const inputNodes = this.executionOrder.filter(node => 
@@ -77,6 +78,15 @@ export class PipelineExecutor {
     
     // Clear the executing node ID
     window.executingNodeId = null;
+    
+    // Store all results in the global variable for node access
+    window.pipelineResults = { ...this.results };
+    
+    // Trigger a custom event to notify nodes that results are available
+    const resultsEvent = new CustomEvent('pipelineResultsUpdated', {
+      detail: { results: window.pipelineResults }
+    });
+    window.dispatchEvent(resultsEvent);
     
     // Return results from output nodes
     if (outputNodes.length === 1) {
@@ -131,6 +141,15 @@ export class PipelineExecutor {
     
     // Store the result
     this.results[nodeId] = result;
+    
+    // Update the global results for node access
+    window.pipelineResults = { ...window.pipelineResults, [nodeId]: result };
+    
+    // Emit an event to notify that this node's result is available
+    const resultEvent = new CustomEvent('nodeResultAvailable', {
+      detail: { nodeId, result }
+    });
+    window.dispatchEvent(resultEvent);
     
     // Update the context with the result
     const updatedContext = {

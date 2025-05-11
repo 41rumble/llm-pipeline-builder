@@ -1,4 +1,4 @@
-import { memo, useContext } from 'react';
+import { memo, useState, useEffect } from 'react';
 import { Handle, Position, useReactFlow } from 'reactflow';
 
 // Custom node component with dark theme styling
@@ -6,6 +6,8 @@ const BaseNode = ({ id, data, isConnectable, selected }) => {
   const hasInputs = data.type !== 'input';
   const hasOutputs = data.type !== 'output';
   const { getNodes } = useReactFlow();
+  const [showOutput, setShowOutput] = useState(false);
+  const [nodeOutput, setNodeOutput] = useState(null);
   
   // Check if this node is currently executing
   const isExecuting = window.executingNodeId === id;
@@ -17,6 +19,44 @@ const BaseNode = ({ id, data, isConnectable, selected }) => {
     padding: 0,                // Remove padding
     borderRadius: 0,           // Remove border radius
     width: '100%'              // Ensure full width
+  };
+
+  // Check for node output in window.pipelineResults
+  useEffect(() => {
+    // Initial check for existing results
+    if (window.pipelineResults && window.pipelineResults[id]) {
+      setNodeOutput(window.pipelineResults[id]);
+    }
+    
+    // Listen for node result events
+    const handleNodeResult = (event) => {
+      if (event.detail.nodeId === id) {
+        setNodeOutput(event.detail.result);
+      }
+    };
+    
+    // Listen for pipeline results updated event
+    const handlePipelineResults = (event) => {
+      if (event.detail.results && event.detail.results[id]) {
+        setNodeOutput(event.detail.results[id]);
+      }
+    };
+    
+    // Add event listeners
+    window.addEventListener('nodeResultAvailable', handleNodeResult);
+    window.addEventListener('pipelineResultsUpdated', handlePipelineResults);
+    
+    // Clean up event listeners
+    return () => {
+      window.removeEventListener('nodeResultAvailable', handleNodeResult);
+      window.removeEventListener('pipelineResultsUpdated', handlePipelineResults);
+    };
+  }, [id]);
+
+  // Toggle output display
+  const toggleOutput = (e) => {
+    e.stopPropagation();
+    setShowOutput(!showOutput);
   };
 
   return (
@@ -59,6 +99,43 @@ const BaseNode = ({ id, data, isConnectable, selected }) => {
               </div>
             );
           })}
+          
+          {/* Output button - only show if we have results */}
+          {nodeOutput && (
+            <div className="node-output-controls">
+              <button 
+                className="node-output-toggle" 
+                onClick={toggleOutput}
+              >
+                {showOutput ? 'Hide Output' : 'Show Output'}
+              </button>
+            </div>
+          )}
+          
+          {/* Output display */}
+          {showOutput && nodeOutput && (
+            <div className="node-output-display">
+              <div className="node-output-content">
+                {Array.isArray(nodeOutput) ? (
+                  <div>
+                    <div className="node-output-array-info">Array with {nodeOutput.length} items:</div>
+                    {nodeOutput.map((item, index) => (
+                      <div key={index} className="node-output-array-item">
+                        <div className="node-output-array-index">{index + 1}:</div>
+                        <div className="node-output-array-value">
+                          {typeof item === 'object' ? JSON.stringify(item, null, 2) : String(item)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="node-output-text">
+                    {typeof nodeOutput === 'object' ? JSON.stringify(nodeOutput, null, 2) : String(nodeOutput)}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
         
         {hasOutputs && (
