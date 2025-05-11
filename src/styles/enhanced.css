@@ -724,3 +724,32 @@ body {
 .mt-2 {
   margin-top: 8px;
 }
+/* Knowledge Base Selector Styles */
+.knowledge-base-selector {
+  margin-bottom: 15px;
+}
+
+.kb-selector-header {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.no-knowledge-bases {
+  margin-top: 8px;
+  color: #666;
+  font-style: italic;
+}
+
+.error-message {
+  margin-top: 8px;
+  color: #d9534f;
+  font-size: 0.9em;
+}
+
+.selected-knowledge-base {
+  margin-top: 8px;
+  font-style: italic;
+  color: #5bc0de;
+  font-size: 0.9em;
+}

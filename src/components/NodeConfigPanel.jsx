@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import nodeRegistry from '../utils/nodeRegistry';
 import { getOllamaModels } from '../engine/llmService';
+import KnowledgeBaseSelector from './KnowledgeBaseSelector';
 
 const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
   console.log('NodeConfigPanel received:', selectedNode);
@@ -154,6 +155,12 @@ const NodeConfigPanel = ({ selectedNode, onUpdateNode, onClose }) => {
                           {childValue ? 'Enabled' : 'Disabled'}
                         </label>
                       </div>
+                    ) : key === 'openwebui' && childKey === 'knowledgeBase' ? (
+                      <KnowledgeBaseSelector
+                        value={childValue}
+                        onChange={(value) => handleNestedChange(key, childKey, value)}
+                        serverUrl={nodeParams.openwebui?.url || 'http://localhost:8080'}
+                      />
                     ) : childKey === 'model' ? (
                       <select
                         value={childValue}
