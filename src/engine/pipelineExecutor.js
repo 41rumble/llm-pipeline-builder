@@ -382,55 +382,13 @@ export class PipelineExecutor {
       const callId = `llm-${node.id}-${Date.now().toString(36)}`;
       console.log(`Starting LLM call ${callId}`);
       
-      // Extract the original query from the context if available
-      let originalQuery = "";
-      if (context.nodeResults) {
-        // Look for input node results
-        const inputNodeEntry = Object.entries(context.nodeResults)
-          .find(([id, result]) => this.nodeMap.get(id)?.type === 'input');
-        
-        if (inputNodeEntry) {
-          originalQuery = inputNodeEntry[1];
-        }
-      }
-      
-      // Add a system prompt to encourage detailed responses
-      const enhancedPrompt = `# EXPERT RESEARCHER RESPONSE
-
-## Research Question
-${typeof inputText === 'string' ? inputText : String(inputText)}
-
-${originalQuery ? `## Original Topic\nThis question relates to the broader topic: "${originalQuery}"\n` : ''}
-
-## Instructions
-You are a leading researcher writing a detailed response for an educational publication. Your answer must:
-
-1. DIRECTLY ADDRESS THE SPECIFIC QUESTION ASKED - Focus precisely on what was asked
-2. BE COMPREHENSIVE - Cover all relevant aspects in depth (500+ words)
-3. INCLUDE SPECIFIC EXAMPLES - Provide concrete examples, case studies, or evidence
-4. BE FACTUALLY ACCURATE - Base your response on established research and facts
-5. BE WELL-STRUCTURED - Use clear organization with logical flow
-6. BE EDUCATIONAL - Explain concepts clearly for an intelligent but non-expert audience
-
-## Response Requirements
-- Write as a human expert, not an AI
-- Never apologize for limitations or mention being an AI
-- Never say "I don't have specific information" - use your expertise
-- Include specific facts, figures, and examples where relevant
-- Maintain an authoritative, educational tone throughout
-
-## Response Format
-Structure your answer with:
-- A direct answer to the question in the first paragraph
-- Multiple sections covering different aspects of the answer
-- Specific examples and supporting evidence
-- A conclusion summarizing key points
-
-Begin your expert response now:`;
+      // Use the input text directly without adding any hardcoded instructions
+      // This ensures we're only using what the user configured in the interface
+      const inputPrompt = typeof inputText === 'string' ? inputText : String(inputText);
       
       const response = await callLLM({
         model: node.params.model || "phi:latest", // Use a default model if none specified
-        prompt: enhancedPrompt,
+        prompt: inputPrompt,
         temperature: node.params.temperature,
         max_tokens: node.params.max_tokens
       });
@@ -555,16 +513,14 @@ Begin your expert response now:`;
       console.log(`Starting summarizer LLM call ${callId}`);
       console.log(`Using model: ${node.params.llm?.model || "phi:latest"}, max_tokens: ${node.params.llm?.max_tokens || 8000}`);
       
-      // Force a high max_tokens value for the summarizer to ensure comprehensive responses
-      const maxTokens = Math.max(node.params.llm?.max_tokens || 8000, 8000);
+      // Use the user-configured max_tokens value
+      const maxTokens = node.params.llm?.max_tokens || 4000;
       
-      // Add a note about the expected length to help the model
-      const enhancedPrompt = prompt + "\n\nNOTE: Your response should be at least 2000 words. Do not stop until you have completed all sections.";
-      
+      // Use the prompt as is, without adding any hardcoded instructions
       const response = await callLLM({
         model: node.params.llm?.model || "phi:latest", // Use a default model if none specified
-        prompt: enhancedPrompt,
-        temperature: node.params.llm?.temperature || 0.1, // Lower temperature for more focused responses
+        prompt: prompt,
+        temperature: node.params.llm?.temperature || 0.7, // Use the configured temperature
         max_tokens: maxTokens
       });
       

@@ -27,24 +27,17 @@ export const generateText = async (model, prompt, options = {}) => {
   
   try {
     // Ensure max_tokens is a number and has a reasonable value
-    let maxTokens = 8000; // Default to 8000 for longer responses
+    let maxTokens = 2000; // Default to 2000 as a reasonable default
     if (options.max_tokens !== undefined) {
       // Convert to number if it's a string
       maxTokens = parseInt(options.max_tokens, 10);
-      // If parsing failed or value is unreasonable, use default
-      if (isNaN(maxTokens) || maxTokens < 100) {
-        maxTokens = 8000;
+      // If parsing failed, use default
+      if (isNaN(maxTokens)) {
+        maxTokens = 2000;
       } else if (maxTokens > 32000) {
         // Cap at 32000 to avoid issues with some models
         maxTokens = 32000;
       }
-    }
-    
-    // For summarizer nodes, ensure we have a high token limit
-    if (model === "phi:latest" && prompt.includes("MANDATORY INSTRUCTIONS FOR DETAILED EDUCATIONAL ARTICLE")) {
-      // Force a high token limit for summarizer to ensure comprehensive responses
-      maxTokens = Math.max(maxTokens, 8000);
-      console.log("Detected summarizer node, ensuring high token limit:", maxTokens);
     }
     
     // Prepare the request to the Ollama API for the generate endpoint
